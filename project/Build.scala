@@ -8,7 +8,7 @@ import scalariform.formatter.preferences._
 object ApplicationBuild extends Build {
 
     val appName         = "play2-closure"
-    val appVersion      = "0.1-SNAPSHOT"
+    val appVersion      = "0.2-SNAPSHOT"
 
     val appDependencies = Seq(
 		// Add your project dependencies here,
@@ -17,7 +17,7 @@ object ApplicationBuild extends Build {
 
 	val localSettings = Seq(
 		// Add your own project settings here      
-		organization := "com.kinja",
+		organization := "com.kinja.play",
 		resolvers += "Local Maven Repository" at "file://"+Path.userHome+"/.m2/repository",
 		resolvers += "Gawker Public Group" at "https://vip.gawker.com/nexus/content/groups/public/",
 		publishTo <<= (version)(version =>
