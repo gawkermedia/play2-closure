@@ -8,7 +8,7 @@ import scalariform.formatter.preferences._
 object ApplicationBuild extends Build {
 
     val appName         = "play2-closure"
-    val appVersion      = "0.2-SNAPSHOT"
+    val appVersion      = "0.3-SNAPSHOT"
 
     val appDependencies = Seq(
 		// Add your project dependencies here,

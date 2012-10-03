@@ -6,3 +6,16 @@
 {template .index}
 Hello world!
 {/template}
+
+/**
+ * List test template
+ * 
+ * @param name Name of the list
+ * @param list A list
+ */
+{template .list}
+{$name}:{sp}
+{foreach $item in $list}
+	{$item}{if not isLast($item)},{sp}{/if}
+{/foreach}
+{/template}
