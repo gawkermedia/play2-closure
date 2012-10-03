@@ -237,7 +237,7 @@ object ClosureEngine {
 	def apply(mode: Mode.Mode): ClosureEngine = if (mode == Mode.Test) {
 		apply("test/views")
 	} else {
-		apply("app/views")
+		apply("public/views")
 	}
 
 	/**
