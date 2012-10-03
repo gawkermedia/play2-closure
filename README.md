@@ -22,3 +22,15 @@ Import the plugin's helper:
 Render a template:
 
 `Closure.html("com.example.index.soy", Map("hello" -> "world"))`
+
+Set the current locale:
+
+`Closure.setLocale("hu_HU") // ISO language code: four letter with underscore`
+
+The dictionary file pattern is `app/locale/{$locale}.xlf`
+
+## How it works?
+
+When plugin starts it recursively collect all files with .soy ending from your Play! application's `app/view` directory and pass to the closure engine.
+If your application is running in Production mode it happens only once on startup otherwise every time when the renderer being called.
+
