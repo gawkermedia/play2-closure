@@ -51,7 +51,7 @@ class ClosurePlugin(app: Application) extends Plugin {
  *
  * @param sourceDirectories List of directories where you store your templates
  */
-class ClosureEngine(val sourceDirectories: Traversable[File]) {
+class ClosureEngine(val files: Traversable[File]) {
 
 	protected var DEFAULT_LOCALE = "en_US"
 
@@ -65,7 +65,7 @@ class ClosureEngine(val sourceDirectories: Traversable[File]) {
 	/**
 	 * List of template files.
 	 */
-	protected lazy val files = fileList
+	//protected lazy val files: Traversable[File] = fileList
 
 	/**
 	 * Converts a case class into a map.
@@ -132,16 +132,6 @@ class ClosureEngine(val sourceDirectories: Traversable[File]) {
 		}
 		sm
 	}
-
-	protected def recursiveListFiles(f: File, extension: String = ""): Array[File] = {
-		val these = f.listFiles
-		these.filter(_.getName.endsWith(extension)) ++ these.filter(_.isDirectory).flatMap(recursiveListFiles(_, extension))
-	}
-
-	/**
-	 * Returns all soy files from source directories.
-	 */
-	protected def fileList = sourceDirectories.flatMap(recursiveListFiles(_, ".soy"))
 
 	/**
 	 * Helper.
@@ -234,18 +224,34 @@ object ClosureEngine {
 	/**
 	 * Creates a new engine by mode.
 	 */
-	def apply(mode: Mode.Mode): ClosureEngine = if (mode == Mode.Test) {
-		apply("test/views")
-	} else {
-		apply("public/views")
+	def apply(mode: Mode.Mode): ClosureEngine = mode match {
+		case Mode.Dev => apply("public/views")
+		case Mode.Test => apply("test/views")
+		case _ => apply
 	}
+
+	def apply: ClosureEngine = new ClosureEngine(
+		scala.io.Source.fromInputStream(getClass.getResourceAsStream("/templates.txt"), "UTF-8").getLines().map(line => {
+			println("Loading template: " + line)
+			new File(getClass.getResource(line).toURI)
+		}).toList)
 
 	/**
 	 * Creates a new engine.
 	 *
 	 * @param rootDir Root directory of template files.
 	 */
-	def apply(rootDir: String): ClosureEngine = new ClosureEngine(List(Play.getFile(rootDir)))
+	def apply(rootDir: String): ClosureEngine = new ClosureEngine(List(Play.getFile(rootDir)).flatMap(recursiveListFiles(_, ".soy")))
+
+	def recursiveListFiles(f: File, extension: String = ""): Array[File] = {
+		val these = f.listFiles
+		these.filter(_.getName.endsWith(extension)) ++ these.filter(_.isDirectory).flatMap(recursiveListFiles(_, extension))
+	}
+
+	/**
+	 * Returns all soy files from source directories.
+	 */
+	//def fileList: Traversable[File] = sourceDirectories.flatMap(recursiveListFiles(_, ".soy"))
 
 }
 
