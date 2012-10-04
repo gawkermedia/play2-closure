@@ -14,6 +14,7 @@ import com.google.template.soy.msgs.SoyMsgBundleHandler
 import com.google.template.soy.xliffmsgplugin.XliffMsgPlugin
 
 import java.io.File
+import java.net.URL
 
 /**
  * Play plugin for Closure.
@@ -51,7 +52,7 @@ class ClosurePlugin(app: Application) extends Plugin {
  *
  * @param sourceDirectories List of directories where you store your templates
  */
-class ClosureEngine(val files: Traversable[File]) {
+class ClosureEngine(val files: Traversable[URL]) {
 
 	protected var DEFAULT_LOCALE = "en_US"
 
@@ -154,7 +155,7 @@ class ClosureEngine(val files: Traversable[File]) {
 	 *
 	 * @param input List of template files
 	 */
-	def fileSet(input: Traversable[File]): SoyFileSet.Builder = {
+	def fileSet(input: Traversable[URL]): SoyFileSet.Builder = {
 		val soyBuilder = new SoyFileSet.Builder()
 		input.foreach(file => {
 			Logger("closureplugin").debug("Add " + file)
@@ -233,7 +234,7 @@ object ClosureEngine {
 	def apply: ClosureEngine = new ClosureEngine(
 		scala.io.Source.fromInputStream(getClass.getResourceAsStream("/templates.txt"), "UTF-8").getLines().map(line => {
 			println("Loading template: " + line)
-			new File(getClass.getResource(line).toURI)
+			getClass.getResource(line)
 		}).toList)
 
 	/**
@@ -241,7 +242,8 @@ object ClosureEngine {
 	 *
 	 * @param rootDir Root directory of template files.
 	 */
-	def apply(rootDir: String): ClosureEngine = new ClosureEngine(List(Play.getFile(rootDir)).flatMap(recursiveListFiles(_, ".soy")))
+	def apply(rootDir: String): ClosureEngine = new ClosureEngine(
+		List(Play.getFile(rootDir)).flatMap(recursiveListFiles(_, ".soy")).map(_.toURI.toURL))
 
 	def recursiveListFiles(f: File, extension: String = ""): Array[File] = {
 		val these = f.listFiles
