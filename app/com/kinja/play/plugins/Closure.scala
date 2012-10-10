@@ -171,9 +171,14 @@ class ClosureEngine(val files: Traversable[URL]) {
 
 	def msgBundle: Option[SoyMsgBundle] = {
 		if (locale != DEFAULT_LOCALE) {
-			val bundleHandler = new SoyMsgBundleHandler(new XliffMsgPlugin());
-			val bundle = bundleHandler.createFromFile(Play.getFile("app/locales/" + locale + ".xlf"));
-			Some(bundle)
+			getClass.getResource("/" + locale + ".xlf") match {
+				case url: java.net.URL => {
+					val bundleHandler = new SoyMsgBundleHandler(new XliffMsgPlugin());
+					val bundle = bundleHandler.createFromResource(url)
+					Some(bundle)
+				}
+				case _ => None
+			}
 		} else {
 			None
 		}
@@ -225,15 +230,14 @@ object ClosureEngine {
 	/**
 	 * Creates a new engine by mode.
 	 */
-	def apply(mode: Mode.Mode): ClosureEngine = mode match {
-		case Mode.Dev => apply("public/views")
+	def apply(mode: Mode.Mode): ClosureEngine = apply /*mode match {
+		case Mode.Dev => apply("app/views/closure")
 		case Mode.Test => apply("test/views")
 		case _ => apply
-	}
+	}*/
 
 	def apply: ClosureEngine = new ClosureEngine(
-		scala.io.Source.fromInputStream(getClass.getResourceAsStream("/templates.txt"), "UTF-8").getLines().map(line => {
-			println("Loading template: " + line)
+		scala.io.Source.fromInputStream(getClass.getResourceAsStream("/closure_templates.txt"), "UTF-8").getLines().map(line => {
 			getClass.getResource(line)
 		}).toList)
 

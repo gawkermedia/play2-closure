@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file original="SoyMsgBundle" datatype="x-soy-msg-bundle" xml:space="preserve" source-language="en" target-language="hu">
+    <body>
+      <trans-unit id="935187492052582731" datatype="html">
+        <source>Submit</source>
+        <target>Hu Submit</target>
+        <note priority="1" from="description">Form Button - Submit</note>
+      </trans-unit>
+      <trans-unit id="1431416938026210429" datatype="html">
+        <source>Password</source>
+        <target>Hu Password</target>
+        <note priority="1" from="description">Form Label - Password</note>
+      </trans-unit>
+      <trans-unit id="2159130950882492111" datatype="html">
+        <source>Cancel</source>
+        <target>Hu Cancel</target>
+        <note priority="1" from="description">Form Button - Cancel</note>
+      </trans-unit>
+      <trans-unit id="4768749765465246664" datatype="html">
+        <source>Email</source>
+        <target>Hu Email</target>
+        <note priority="1" from="description">Form Label - Email</note>
+      </trans-unit>
+      <trans-unit id="5248717555542428023" datatype="html">
+        <source>Username</source>
+        <target>Hu Username</target>
+        <note priority="1" from="description">Form Label - Username</note>
+      </trans-unit>
+      <trans-unit id="5271493029972691096" datatype="html">
+        <source>Welcome to Kinja</source>
+        <target>Hu Welcome to Kinja</target>
+        <note priority="1" from="description">Welcome Title</note>
+      </trans-unit>
+      <trans-unit id="7886570921510760899" datatype="html">
+        <source>Tags</source>
+        <target>Hu Tags</target>
+        <note priority="1" from="description">Form Label - Tags</note>
+      </trans-unit>
+      <trans-unit id="8386493650739116899" datatype="html">
+        <source>Post</source>
+        <target>Hu Post</target>
+        <note priority="1" from="description">Form Label - Post</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

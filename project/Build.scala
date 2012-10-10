@@ -5,10 +5,12 @@ import PlayProject._
 import com.typesafe.sbtscalariform.ScalariformPlugin._
 import scalariform.formatter.preferences._
 
+import com.kinja.play.sbt.plugin.closure.SbtSoy._
+
 object ApplicationBuild extends Build {
 
     val appName         = "play2-closure"
-    val appVersion      = "0.6-SNAPSHOT"
+    val appVersion      = "0.7-SNAPSHOT"
 
     val appDependencies = Seq(
 		// Add your project dependencies here,
@@ -29,8 +31,24 @@ object ApplicationBuild extends Build {
 		ScalariformKeys.preferences := FormattingPreferences().setPreference(IndentWithTabs, true)
 	)
 
+	val plugin = Project(
+		"soy-sbt-plugin",
+		file("sbt-plugin"),
+		settings = Defaults.defaultSettings ++ localSettings ++ Seq(
+			resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
+			version := "0.3-SNAPSHOT",
+			sbtPlugin := true,
+			libraryDependencies := appDependencies ++ Seq(
+			)
+		)
+	)
+
+	val extraSettings = localSettings ++ soySettings ++ Seq(
+		resourceGenerators in Test <+= SoyKeys.soyCompiler in Test
+	)
+
     val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
-		localSettings : _*
+		extraSettings : _*
     )
 
 }

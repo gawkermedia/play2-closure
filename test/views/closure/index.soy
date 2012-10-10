@@ -19,3 +19,18 @@ Hello world!
 	{$item}{if not isLast($item)},{sp}{/if}
 {/foreach}
 {/template}
+
+/**
+ * List in list test template
+ * 
+ * @param name Name of the list
+ * @param list A list
+ */
+{template .listInList}
+{foreach $item in $list}
+	{call .list}
+		{param name: $name/}
+		{param list: $item/}
+	{/call}
+{/foreach}
+{/template}
