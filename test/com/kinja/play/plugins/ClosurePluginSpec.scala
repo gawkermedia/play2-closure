@@ -23,6 +23,14 @@ class ClosurePluginSpec extends Specification {
 		}
 	}
 
+	"Render a Long value" should {
+		"equal '42'" in {
+			running(app) {
+				Closure.render("closuretest.long", Map("long" -> 42L)) === "42"
+			}
+		}
+	}
+
 	"Render a list test page" should {
 		"equal 'Test list: 1, 2, 3, 4, 6'" in {
 			running(app) {

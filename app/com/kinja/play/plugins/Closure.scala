@@ -87,7 +87,7 @@ class ClosureEngine(val files: Traversable[URL]) {
 			case s: String => sl.add(s)
 			case d: Double => sl.add(d)
 			case f: Float => sl.add(f)
-			case l: Long => sl.add(l)
+			case l: Long => sl.add(l.toString)
 			case i: Int => sl.add(i)
 			case a: AnyRef if a != null => sl.add(mapToSoyData(getCCParams(a)))
 			case None =>
@@ -114,7 +114,7 @@ class ClosureEngine(val files: Traversable[URL]) {
 			case s: String => sm.put(k, s)
 			case d: Double => sm.put(k, d)
 			case f: Float => sm.put(k, f)
-			case l: Long => sm.put(k, l)
+			case l: Long => sm.put(k, l.toString)
 			case i: Int => sm.put(k, i)
 			case a: AnyRef if a != null => sm.put(k, mapToSoyData(getCCParams(a)))
 			case None =>
