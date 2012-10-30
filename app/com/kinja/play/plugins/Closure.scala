@@ -146,8 +146,9 @@ class ClosureEngine(val files: Traversable[URL]) {
 
 	def getLocale = locale
 
-	def setLocale(name: String): Unit = {
+	def setLocale(name: String): ClosureEngine = {
 		locale = name
+		this
 	}
 
 	/**
@@ -266,18 +267,20 @@ object ClosureEngine {
  */
 object Closure {
 
+	private var defaultLocale = "en_US"
+
 	private def plugin = play.api.Play.maybeApplication.map { app =>
 		app.plugin[ClosurePlugin].getOrElse(throw new RuntimeException("you should enable ClosurePlugin in play.plugins"))
 	}.getOrElse(throw new RuntimeException("you should have a running app in scope a this point"))
 
-	def getLocale: String = plugin.api.getLocale
+	def getLocale: String = defaultLocale //plugin.api.getLocale
 
-	def setLocale(locale: String): Unit = plugin.api.setLocale(locale)
+	def setLocale(locale: String): Unit = defaultLocale = locale //plugin.api.setLocale(locale)
 
 	// PUBLIC INTERFACE
-	def render(template: String, data: Map[String, Any] = Map()): String = plugin.api.render(template, data)
+	def render(template: String, data: Map[String, Any] = Map()): String = plugin.api.setLocale(defaultLocale).render(template, data)
 
-	def render(template: String, data: SoyMapData): String = plugin.api.render(template, data)
+	def render(template: String, data: SoyMapData): String = plugin.api.setLocale(defaultLocale).render(template, data)
 
 	def html(template: String, data: Map[String, Any] = Map()): Html = Html(render(template, data))
 
