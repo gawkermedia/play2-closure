@@ -50,4 +50,19 @@ class ClosurePluginSpec extends Specification {
 			}
 		}
 	}
+
+	"Locale" should {
+		"be en_US by default" in {
+			running(app) {
+				Closure.getLocale === "en_US"
+			}
+		}
+
+		"equal hu_HU" in {
+			running(app) {
+				Closure.setLocale("hu_HU")
+				Closure.getLocale === "hu_HU"
+			}
+		}
+	}
 }
