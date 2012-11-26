@@ -5,6 +5,8 @@ import play.api.templates._
 import play.api.Configuration._
 import play.api.Play.current
 
+import collection.JavaConversions._
+
 import com.google.template.soy.SoyFileSet
 import com.google.template.soy.data.SoyListData
 import com.google.template.soy.data.SoyMapData
@@ -89,6 +91,7 @@ class ClosureEngine(val files: Traversable[URL]) {
 			case f: Float => sl.add(f)
 			case l: Long => sl.add(l.toString)
 			case i: Int => sl.add(i)
+			case s: Set[String] =>
 			case a: AnyRef if a != null => sl.add(mapToSoyData(getCCParams(a)))
 			case None =>
 			case null =>
@@ -214,7 +217,10 @@ class ClosureEngine(val files: Traversable[URL]) {
 	 * @param data The data to call the template with.
 	 */
 	def render(template: String, data: Map[String, Any]): String =
-		renderer(template).setData(mapToSoyData(data)).render()
+		data.get("delegate") match {
+			case Some(sd: Set[String]) => renderer(template).setActiveDelegatePackageNames(sd).setData(mapToSoyData(data)).render()
+			case _ => renderer(template).setData(mapToSoyData(data)).render()
+		}
 
 	/**
 	 *  Renders a template.
