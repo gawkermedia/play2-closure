@@ -1,6 +1,6 @@
 import sbt._
 import Keys._
-import PlayProject._
+import play.Project._
 
 import com.typesafe.sbt.SbtScalariform._
 import scalariform.formatter.preferences.{ FormattingPreferences, IndentWithTabs }
@@ -21,6 +21,8 @@ object ApplicationBuild extends Build {
 		// Add your own project settings here
 		scalaVersion := "2.10.0-RC1",
 		organization := "com.kinja.play",
+		scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
+		javacOptions ++= Seq("-Xlint:deprecation"),
 		resolvers += "Local Maven Repository" at "file://"+Path.userHome+"/.m2/repository",
 		resolvers += "Gawker Public Group" at "https://vip.gawker.com/nexus/content/groups/public/",
 		publishTo <<= (version)(version =>
@@ -48,7 +50,7 @@ object ApplicationBuild extends Build {
 		resourceGenerators in Test <+= SoyKeys.soyCompiler in Test
 	)
 
-    val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
+    val main = play.Project(appName, appVersion, appDependencies).settings(
 		extraSettings : _*
     )
 
