@@ -9,8 +9,8 @@ credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
 // Use the Play sbt plugin for Play projects
-addSbtPlugin("play" % "sbt-plugin" % "2.0.4")
+addSbtPlugin("play" % "sbt-plugin" % "2.1-RC1")
 
-addSbtPlugin("com.typesafe.sbtscalariform" % "sbtscalariform" % "0.3.1")
+addSbtPlugin("com.typesafe.sbt" % "sbt-scalariform" % "1.0.0")
 
 addSbtPlugin("com.kinja.play" % "soy-sbt-plugin" % "0.3-SNAPSHOT")

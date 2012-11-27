@@ -2,8 +2,8 @@ import sbt._
 import Keys._
 import PlayProject._
 
-import com.typesafe.sbtscalariform.ScalariformPlugin._
-import scalariform.formatter.preferences._
+import com.typesafe.sbt.SbtScalariform._
+import scalariform.formatter.preferences.{ FormattingPreferences, IndentWithTabs }
 
 import com.kinja.play.sbt.plugin.closure.SbtSoy._
 
@@ -19,6 +19,7 @@ object ApplicationBuild extends Build {
 
 	val localSettings = Seq(
 		// Add your own project settings here
+		scalaVersion := "2.10.0-RC1",
 		organization := "com.kinja.play",
 		resolvers += "Local Maven Repository" at "file://"+Path.userHome+"/.m2/repository",
 		resolvers += "Gawker Public Group" at "https://vip.gawker.com/nexus/content/groups/public/",
