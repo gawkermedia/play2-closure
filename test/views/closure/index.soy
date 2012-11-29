@@ -43,3 +43,19 @@ Hello world!
 	{/call}
 {/foreach}
 {/template}
+
+/**
+ * locale test
+ */
+{template .locale}
+{msg desc="Form Button - Submit"}Submit{/msg}
+{/template}
+
+/**
+ * Option test
+ *
+ * @param value an optional value
+ */
+{template .option}
+{$value ? $value : 'None'}
+{/template}

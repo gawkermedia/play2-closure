@@ -1,3 +1,4 @@
+// vim: sw=2 ts=2 softtabstop=2 expandtab :
 package com.kinja.play.plugins
 
 import play.api._
@@ -23,30 +24,33 @@ import java.net.URL
  */
 class ClosurePlugin(app: Application) extends Plugin {
 
-	lazy val engine = newEngine.build
+  lazy val engine = newEngine.build
 
-	def newEngine: ClosureEngine = ClosureEngine(app.mode)
+  def newEngine: ClosureEngine = ClosureEngine(app.mode)
 
-	/**
-	 * If the app is running in production mode then always returns a same engine instance, otherwise returns a brand new instance.
-	 */
-	def api = if (app.mode == Mode.Prod) {
-		engine
-	} else {
-		newEngine
-	}
+  /**
+   * If the app is running in production mode then always returns a same engine instance,
+   * otherwise returns a brand new instance.
+   */
+  def api = if (app.mode == Mode.Prod) {
+    engine
+  } else {
+    newEngine
+  }
 
-	override def onStart() = {
-		Logger("closureplugin").info("start on mode: " + app.mode)
-		// This reprevent the new engine creatation on startup in dev mode.
-		if (app.mode == Mode.Prod) {
-			api
-		}
-	}
+  override def onStart() = {
+    Logger("closureplugin").info("start on mode: " + app.mode)
+    // This reprevent the new engine creatation on startup in dev mode.
+    if (app.mode == Mode.Prod) {
+      api
+    }
+  }
 
-	override lazy val enabled = {
-		!app.configuration.getString("closureplugin").filter(_ == "disabled").isDefined
-	}
+  override lazy val enabled = {
+    !app.configuration.getString("closureplugin").filter(
+      _ == "disabled"
+    ).isDefined
+  }
 }
 
 /**
@@ -54,217 +58,216 @@ class ClosurePlugin(app: Application) extends Plugin {
  *
  * @param sourceDirectories List of directories where you store your templates
  */
-class ClosureEngine(val files: Traversable[URL]) {
+class ClosureEngine(val files: Traversable[URL], val DEFAULT_LOCALE: String = "en_US") {
 
-	protected var DEFAULT_LOCALE = "en_US"
+  val KEY_DELEGATE_NS = "delegate"
 
-	protected var locale = DEFAULT_LOCALE
+  val KEY_LOCALE = "locale"
 
-	/**
-	 * The current compiled templates.
-	 */
-	protected lazy val tofu: SoyTofu = builder
+  /**
+   * The current compiled templates.
+   */
+  protected lazy val tofu: SoyTofu = builder
 
-	/**
-	 * List of template files.
-	 */
-	//protected lazy val files: Traversable[File] = fileList
+  /**
+   * Converts a case class into a map.
+   *
+   * @param cc A case class instance.
+   */
+  protected def getCCParams(cc: AnyRef): Map[String, Any] = {
+    (Map[String, Any]() /: cc.getClass.getDeclaredFields) { (a, f) =>
+      f.setAccessible(true)
+      a + (f.getName -> f.get(cc))
+    }
+  }
 
-	/**
-	 * Converts a case class into a map.
-	 *
-	 * @param cc A case class instance.
-	 */
-	protected def getCCParams(cc: AnyRef): Map[String, Any] = {
-		(Map[String, Any]() /: cc.getClass.getDeclaredFields) { (a, f) =>
-			f.setAccessible(true)
-			a + (f.getName -> f.get(cc))
-		}
-	}
+  protected def addSoyValue(sl: SoyListData, a: Any): Unit = {
+    a match {
+      case mm: Map[String, Any] => sl.add(mapToSoyData(mm))
+      case l: List[Any] => sl.add(listToSoyData(l))
+      case s: String => sl.add(s)
+      case d: Double => sl.add(d)
+      case f: Float => sl.add(f)
+      case l: Long => sl.add(l.toString)
+      case i: Int => sl.add(i)
+      case s: Set[String] =>
+      case None => null
+      case null => null
+      case a: AnyRef if a != null => sl.add(mapToSoyData(getCCParams(a)))
+      case _ => throw new Exception("Invalid Soy object: " + a)
+    }
+  }
 
-	protected def addSoyValue(sl: SoyListData, a: Any): Unit = {
-		a match {
-			case mm: Map[String, Any] => sl.add(mapToSoyData(mm))
-			case l: List[Any] => sl.add(listToSoyData(l))
-			case s: String => sl.add(s)
-			case d: Double => sl.add(d)
-			case f: Float => sl.add(f)
-			case l: Long => sl.add(l.toString)
-			case i: Int => sl.add(i)
-			case s: Set[String] =>
-			case a: AnyRef if a != null => sl.add(mapToSoyData(getCCParams(a)))
-			case None =>
-			case null =>
-			case _ => throw new Exception("Invalid Soy object: " + a)
-		}
-	}
+  protected def listToSoyData(l: List[Any]): SoyListData = {
+    val sl = new SoyListData()
+    l.foreach { v =>
+      v match {
+        case Some(a: Any) => addSoyValue(sl, a)
+        case _ => addSoyValue(sl, v)
+      }
+    }
+    sl
+  }
 
-	protected def listToSoyData(l: List[Any]): SoyListData = {
-		val sl = new SoyListData()
-		l.foreach { v =>
-			v match {
-				case Some(a: Any) => addSoyValue(sl, a)
-				case _ => addSoyValue(sl, v)
-			}
-		}
-		sl
-	}
+  protected def putSoyValue(sm: SoyMapData, k: String, a: Any): Unit = {
+    a match {
+      case mm: Map[String, Any] => sm.put(k, mapToSoyData(mm))
+      case l: List[Any] => sm.put(k, listToSoyData(l))
+      case s: String => sm.put(k, s)
+      case d: Double => sm.put(k, d)
+      case f: Float => sm.put(k, f)
+      case l: Long => sm.put(k, l.toString)
+      case i: Int => sm.put(k, i)
+      case None => null
+      case null => null
+      case a: AnyRef if a != null => sm.put(k, mapToSoyData(getCCParams(a)))
+      case _ => throw new Exception("Invalid Soy object: " + a)
+    }
+  }
 
-	protected def putSoyValue(sm: SoyMapData, k: String, a: Any): Unit = {
-		a match {
-			case mm: Map[String, Any] => sm.put(k, mapToSoyData(mm))
-			case l: List[Any] => sm.put(k, listToSoyData(l))
-			case s: String => sm.put(k, s)
-			case d: Double => sm.put(k, d)
-			case f: Float => sm.put(k, f)
-			case l: Long => sm.put(k, l.toString)
-			case i: Int => sm.put(k, i)
-			case a: AnyRef if a != null => sm.put(k, mapToSoyData(getCCParams(a)))
-			case None =>
-			case null =>
-			case _ => throw new Exception("Invalid Soy object: " + a)
-		}
-	}
+  protected def mapToSoyData(m: Map[String, Any]): SoyMapData = {
+    val sm = new SoyMapData()
+    m.keys.foreach { k =>
+      m(k) match {
+        case Some(a: Any) => putSoyValue(sm, k, a)
+        case _ => putSoyValue(sm, k, m(k))
+      }
+    }
+    sm
+  }
 
-	protected def mapToSoyData(m: Map[String, Any]): SoyMapData = {
-		val sm = new SoyMapData()
-		m.keys.foreach { k =>
-			m(k) match {
-				case Some(a: Any) => putSoyValue(sm, k, a)
-				case _ => putSoyValue(sm, k, m(k))
-			}
-		}
-		sm
-	}
+  /**
+   * Helper.
+   *
+   * Creates a tofu instance and returns an engine instance.
+   */
+  def build: ClosureEngine = {
+    tofu
+    this
+  }
 
-	/**
-	 * Helper.
-	 *
-	 * Creates a tofu instance and returns an engine instance.
-	 */
-	def build: ClosureEngine = {
-		tofu
-		this
-	}
+  /**
+   * Add all input files to the builder.
+   *
+   * @param input List of template files
+   */
+  def fileSet(input: Traversable[URL]): SoyFileSet.Builder = {
+    val soyBuilder = new SoyFileSet.Builder()
+    input.foreach(file => {
+      Logger("closureplugin").debug("Add " + file)
+      soyBuilder.add(file)
+    })
+    soyBuilder
+  }
 
-	def getLocale = locale
+  /**
+   * Compile the current file set - which stored in the files lazy val -  into Java object.
+   */
+  def builder: SoyTofu = fileSet(files).build.compileToTofu
 
-	def setLocale(name: String): ClosureEngine = {
-		locale = name
-		this
-	}
+  def msgBundle(locale: String): Option[SoyMsgBundle] = {
+    if (locale != DEFAULT_LOCALE) {
+      getClass.getResource("/" + locale + ".xlf") match {
+        case url: java.net.URL => {
+          val bundleHandler = new SoyMsgBundleHandler(new XliffMsgPlugin());
+          val bundle = bundleHandler.createFromResource(url)
+          Some(bundle)
+        }
+        case _ => None
+      }
+    } else {
+      None
+    }
+  }
 
-	/**
-	 * Add all input files to the builder.
-	 *
-	 * @param input List of template files
-	 */
-	def fileSet(input: Traversable[URL]): SoyFileSet.Builder = {
-		val soyBuilder = new SoyFileSet.Builder()
-		input.foreach(file => {
-			Logger("closureplugin").debug("Add " + file)
-			soyBuilder.add(file)
-		})
-		soyBuilder
-	}
+  /**
+   * Creates a new Renderer for a template without any msgbundle.
+   *
+   * @param template  The name of the template to render.
+   *                  You can use names like "closuretest.index.soy", the .soy extension will be removed.
+   */
+  def newRenderer(template: String): SoyTofu.Renderer =
+    tofu.newRenderer(template.replace(".soy", ""))
 
-	/**
-	 * Compile the current file set - which stored in the files lazy val -  into Java object.
-	 */
-	def builder: SoyTofu = fileSet(files).build.compileToTofu
+  /**
+   * Creates a new Renderer for a template with an opitional msgbundle.
+   *
+   * @param template  The name of the template to render.
+   *                  You can use names like "closuretest.index.soy", the .soy extension will be removed.
+   */
+  def renderer(template: String, locale: String = DEFAULT_LOCALE): SoyTofu.Renderer = {
+    msgBundle(locale) match {
+      case Some(bundle: SoyMsgBundle) => newRenderer(template).setMsgBundle(bundle)
+      case _ => newRenderer(template)
+    }
+  }
 
-	def msgBundle: Option[SoyMsgBundle] = {
-		if (locale != DEFAULT_LOCALE) {
-			getClass.getResource("/" + locale + ".xlf") match {
-				case url: java.net.URL => {
-					val bundleHandler = new SoyMsgBundleHandler(new XliffMsgPlugin());
-					val bundle = bundleHandler.createFromResource(url)
-					Some(bundle)
-				}
-				case _ => None
-			}
-		} else {
-			None
-		}
-	}
+  /**
+   *  Renders a template.
+   *
+   * @param template The name of the template to render.
+   * @param data The data to call the template with.
+   */
+  def render(template: String, data: Map[String, Any]): String = {
+    val locale: String = data.get(KEY_LOCALE) match {
+      case Some(s: String) => s
+      case _ => DEFAULT_LOCALE
+    }
+    data.get(KEY_DELEGATE_NS) match {
+      case Some(sd: Set[String]) => renderer(template, locale).setActiveDelegatePackageNames(sd).setData(mapToSoyData(data)).render()
+      case _ => renderer(template, locale).setData(mapToSoyData(data)).render()
+    }
+  }
 
-	/**
-	 * Creates a new Renderer for a template without any msgbundle.
-	 *
-	 * @param template  The name of the template to render.
-	 * 					You can use names like "closuretest.index.soy", the .soy extension will be removed.
-	 */
-	def newRenderer(template: String): SoyTofu.Renderer =
-		tofu.newRenderer(template.replace(".soy", ""))
+  /**
+   *  Renders a template.
+   *
+   * @param template The name of the template to render.
+   * @param data The data to call the template with.
+   */
+  def render(template: String, data: SoyMapData): String = {
+    val locale: String = data.getString(KEY_LOCALE) match {
+      case s: String => s
+      case _ => DEFAULT_LOCALE
+    }
+    renderer(template, locale).setData(data).render()
+  }
 
-	/**
-	 * Creates a new Renderer for a template with an opitional msgbundle.
-	 *
-	 * @param template  The name of the template to render.
-	 * 					You can use names like "closuretest.index.soy", the .soy extension will be removed.
-	 */
-	def renderer(template: String): SoyTofu.Renderer = {
-		msgBundle match {
-			case Some(bundle: SoyMsgBundle) => newRenderer(template).setMsgBundle(bundle)
-			case _ => newRenderer(template)
-		}
-	}
-
-	/**
-	 *  Renders a template.
-	 *
-	 * @param template The name of the template to render.
-	 * @param data The data to call the template with.
-	 */
-	def render(template: String, data: Map[String, Any]): String =
-		data.get("delegate") match {
-			case Some(sd: Set[String]) => renderer(template).setActiveDelegatePackageNames(sd).setData(mapToSoyData(data)).render()
-			case _ => renderer(template).setData(mapToSoyData(data)).render()
-		}
-
-	/**
-	 *  Renders a template.
-	 *
-	 * @param template The name of the template to render.
-	 * @param data The data to call the template with.
-	 */
-	def render(template: String, data: SoyMapData): String =
-		renderer(template).setData(data).render()
 }
 
 object ClosureEngine {
 
-	/**
-	 * Creates a new engine by mode.
-	 */
-	def apply(mode: Mode.Mode): ClosureEngine = apply /*mode match {
+  /**
+   * Creates a new engine by mode.
+   */
+  def apply(mode: Mode.Mode): ClosureEngine = apply /*mode match {
 		case Mode.Dev => apply("app/views/closure")
 		case Mode.Test => apply("test/views")
 		case _ => apply
 	}*/
 
-	def apply: ClosureEngine = new ClosureEngine(
-		scala.io.Source.fromInputStream(getClass.getResourceAsStream("/closure_templates.txt"), "UTF-8").getLines().map(line => {
-			getClass.getResource(line)
-		}).toList)
+  def apply: ClosureEngine = new ClosureEngine(
+    scala.io.Source.fromInputStream(getClass.getResourceAsStream("/closure_templates.txt"), "UTF-8").getLines().map(line => {
+      getClass.getResource(line)
+    }).toList)
 
-	/**
-	 * Creates a new engine.
-	 *
-	 * @param rootDir Root directory of template files.
-	 */
-	def apply(rootDir: String): ClosureEngine = new ClosureEngine(
-		List(Play.getFile(rootDir)).flatMap(recursiveListFiles(_, ".soy")).map(_.toURI.toURL))
+  /**
+   * Creates a new engine.
+   *
+   * @param rootDir Root directory of template files.
+   */
+  def apply(rootDir: String): ClosureEngine = new ClosureEngine(
+    List(Play.getFile(rootDir)).flatMap(recursiveListFiles(_, ".soy")).map(_.toURI.toURL))
 
-	def recursiveListFiles(f: File, extension: String = ""): Array[File] = {
-		val these = f.listFiles
-		these.filter(_.getName.endsWith(extension)) ++ these.filter(_.isDirectory).flatMap(recursiveListFiles(_, extension))
-	}
+  def recursiveListFiles(f: File, extension: String = ""): Array[File] = {
+    val these = f.listFiles
+    these.filter(_.getName.endsWith(extension)) ++ these.filter(_.isDirectory).flatMap(recursiveListFiles(_, extension))
+  }
 
-	/**
-	 * Returns all soy files from source directories.
-	 */
-	//def fileList: Traversable[File] = sourceDirectories.flatMap(recursiveListFiles(_, ".soy"))
+  /**
+   * Returns all soy files from source directories.
+   */
+  //def fileList: Traversable[File] = sourceDirectories.flatMap(recursiveListFiles(_, ".soy"))
 
 }
 
@@ -273,23 +276,21 @@ object ClosureEngine {
  */
 object Closure {
 
-	private var defaultLocale = "en_US"
+  private def plugin = play.api.Play.maybeApplication.map { app =>
+    app.plugin[ClosurePlugin].getOrElse(throw new RuntimeException("you should enable ClosurePlugin in play.plugins"))
+  }.getOrElse(throw new RuntimeException("you should have a running app in scope a this point"))
 
-	private def plugin = play.api.Play.maybeApplication.map { app =>
-		app.plugin[ClosurePlugin].getOrElse(throw new RuntimeException("you should enable ClosurePlugin in play.plugins"))
-	}.getOrElse(throw new RuntimeException("you should have a running app in scope a this point"))
+  // PUBLIC INTERFACE
+  def render(template: String, data: Map[String, Any] = Map()): String =
+    plugin.api.render(template, data)
 
-	def getLocale: String = defaultLocale //plugin.api.getLocale
+  def render(template: String, data: SoyMapData): String =
+    plugin.api.render(template, data)
 
-	def setLocale(locale: String): Unit = defaultLocale = locale //plugin.api.setLocale(locale)
+  def html(template: String, data: Map[String, Any] = Map()): Html =
+    Html(render(template, data))
 
-	// PUBLIC INTERFACE
-	def render(template: String, data: Map[String, Any] = Map()): String = plugin.api.setLocale(defaultLocale).render(template, data)
-
-	def render(template: String, data: SoyMapData): String = plugin.api.setLocale(defaultLocale).render(template, data)
-
-	def html(template: String, data: Map[String, Any] = Map()): Html = Html(render(template, data))
-
-	def html(template: String, data: SoyMapData): Html = Html(render(template, data))
+  def html(template: String, data: SoyMapData): Html =
+    Html(render(template, data))
 
 }

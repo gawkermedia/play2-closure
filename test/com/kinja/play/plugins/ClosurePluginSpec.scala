@@ -1,3 +1,4 @@
+// vim: sw=2 ts=2 softtabstop=2 expandtab :
 package com.kinja.play.plugins
 
 import org.specs2.mutable._
@@ -5,64 +6,68 @@ import org.specs2.mutable._
 import play.api.test._
 import play.api.test.Helpers._
 
-class TestResource(name: String)
-
-class TestListResource(items: List[TestResource])
-
 class ClosurePluginSpec extends Specification {
 
-	val app = FakeApplication(
-		additionalPlugins = Seq(
-			"com.kinja.play.plugins.ClosurePlugin"))
+  val app = FakeApplication(
+    additionalPlugins = Seq(
+      "com.kinja.play.plugins.ClosurePlugin"))
 
-	"Render a test page" should {
-		"equal 'Hello world!'" in {
-			running(app) {
-				Closure.render("closuretest.index") === "Hello world!"
-			}
-		}
-	}
+  "Render a test page" should {
+    "equal 'Hello world!'" in {
+      running(app) {
+        Closure.render("closuretest.index") === "Hello world!"
+      }
+    }
+  }
 
-	"Render a Long value" should {
-		"equal '42'" in {
-			running(app) {
-				Closure.render("closuretest.long", Map("long" -> 42L)) === "42"
-			}
-		}
-	}
+  "Render a Long value" should {
+    "equal '42'" in {
+      running(app) {
+        Closure.render("closuretest.long", Map("long" -> 42L)) === "42"
+      }
+    }
+  }
 
-	"Render a list test page" should {
-		"equal 'Test list: 1, 2, 3, 4, 6'" in {
-			running(app) {
-				Closure.render(
-					"closuretest.list",
-					Map("name" -> Some("Test list"), "list" -> List(1, 2, 3, 4, 5, 6))) === "Test list: 1, 2, 3, 4, 5, 6"
-			}
-		}
-	}
+  "Render a list test page" should {
+    "equal 'Test list: 1, 2, 3, 4, 6'" in {
+      running(app) {
+        Closure.render(
+          "closuretest.list",
+          Map("name" -> Some("Test list"), "list" -> List(1, 2, 3, 4, 5, 6))) === "Test list: 1, 2, 3, 4, 5, 6"
+      }
+    }
+  }
 
-	"Render a list in list test page" should {
-		"equal 'Test list: 1, 2, 3, 4, 6'" in {
-			running(app) {
-				Closure.render(
-					"closuretest.listInList",
-					Map("name" -> Some("Test list"), "list" -> List(List(1, 2, 3, 4, 5, 6)))) === "Test list: 1, 2, 3, 4, 5, 6"
-			}
-		}
-	}
+  "Render a list in list test page" should {
+    "equal 'Test list: 1, 2, 3, 4, 6'" in {
+      running(app) {
+        Closure.render(
+          "closuretest.listInList",
+          Map("name" -> Some("Test list"), "list" -> List(List(1, 2, 3, 4, 5, 6)))) === "Test list: 1, 2, 3, 4, 5, 6"
+      }
+    }
+  }
 
-	"Locale" should {
-		"be en_US by default" in {
-			running(app) {
-				Closure.getLocale === "en_US"
-			}
-		}
+  "Render an Option value" should {
+    "equal 'None'" in {
+      running(app) {
+        Closure.render("closuretest.option", Map("value" -> None)) === "None"
+      }
+    }
+    "equal 'Some'" in {
+      running(app) {
+        Closure.render("closuretest.option", Map("value" -> Some("Some value"))) === "Some value"
+      }
+    }
+  }
 
-		"equal hu_HU" in {
-			running(app) {
-				Closure.setLocale("hu_HU")
-				Closure.getLocale === "hu_HU"
-			}
-		}
-	}
+  "Locale" should {
+    "work" in {
+      running(app) {
+        Closure.render("closuretest.locale") === "Submit"
+        Closure.render("closuretest.locale", Map("locale" -> "hu_HU")) === "Hu Submit"
+        Closure.render("closuretest.locale", Map("locale" -> "es_ES")) === "es Submit"
+      }
+    }
+  }
 }

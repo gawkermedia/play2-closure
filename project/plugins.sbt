@@ -13,4 +13,4 @@ addSbtPlugin("play" % "sbt-plugin" % "2.1-RC1")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-scalariform" % "1.0.0")
 
-addSbtPlugin("com.kinja.play" % "soy-sbt-plugin" % "0.3-SNAPSHOT")
+addSbtPlugin("com.kinja.sbt" % "sbt-closure-templates" % "0.1-SNAPSHOT")
