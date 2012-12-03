@@ -28,6 +28,14 @@ class ClosurePluginSpec extends Specification {
     }
   }
 
+  "Render Boolean values" should {
+    "equal 'true false'" in {
+      running(app) {
+        Closure.render("closuretest.bool", Map("true" -> true, "nottrue" -> false)) === "true false"
+      }
+    }
+  }
+
   "Render a list test page" should {
     "equal 'Test list: 1, 2, 3, 4, 6'" in {
       running(app) {

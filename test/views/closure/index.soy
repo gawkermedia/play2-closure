@@ -59,3 +59,14 @@ Hello world!
 {template .option}
 {$value ? $value : 'None'}
 {/template}
+
+/**
+ * Boolean test
+ * @param true Boolean true
+ * @param nottrue Boolean false
+ */
+{template .bool}
+{if $true}true {/if}
+{if not $nottrue}false{/if}
+{/template}
+

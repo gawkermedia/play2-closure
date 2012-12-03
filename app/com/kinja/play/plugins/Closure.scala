@@ -90,6 +90,7 @@ class ClosureEngine(val files: Traversable[URL], val DEFAULT_LOCALE: String = "e
       case f: Float => sl.add(f)
       case l: Long => sl.add(l.toString)
       case i: Int => sl.add(i)
+      case b: Boolean => sl.add(b)
       case s: Set[String] =>
       case None => null
       case null => null
@@ -118,6 +119,7 @@ class ClosureEngine(val files: Traversable[URL], val DEFAULT_LOCALE: String = "e
       case f: Float => sm.put(k, f)
       case l: Long => sm.put(k, l.toString)
       case i: Int => sm.put(k, i)
+      case b: Boolean => sm.put(k, b)
       case None => null
       case null => null
       case a: AnyRef if a != null => sm.put(k, mapToSoyData(getCCParams(a)))
