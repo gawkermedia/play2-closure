@@ -225,6 +225,7 @@ class ClosureEngine(val files: Traversable[URL], val DEFAULT_LOCALE: String = "e
       case _ =>
         renderer(template, locale)
           .setData(mapToSoyData(data))
+          .setIjData(mapToSoyData(inject))
           .render()
     }
   }

@@ -78,4 +78,12 @@ class ClosurePluginSpec extends Specification {
       }
     }
   }
+
+  "Inject" should {
+    "work" in {
+      running(app) {
+        Closure.render("closuretest.inject", Map[String, Any](), Map("foo" -> "bar")) === "bar"
+      }
+    }
+  }
 }
