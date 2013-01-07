@@ -22,7 +22,11 @@ object ApplicationBuild extends Build {
     organization := "com.kinja.play",
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
     javacOptions ++= Seq("-Xlint:deprecation"),
-    resourceGenerators in Test <+= SoyKeys.soyCompiler in Test
+    resourceGenerators in Test <+= SoyKeys.soyCompiler in Test,
+    publishTo <<= (version)(version =>
+      if (version endsWith "SNAPSHOT") Some("Gawker Snapshots" at "https://vip.gawker.com/nexus/content/repositories/snapshots/")
+      else                             Some("Gawker Releases" at "https://vip.gawker.com/nexus/content/repositories/releases/")
+    )
   )
 
   val main = play.Project(appName, appVersion, appDependencies).settings(
