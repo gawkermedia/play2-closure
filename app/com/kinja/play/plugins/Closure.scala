@@ -210,14 +210,22 @@ class ClosureEngine(val files: Traversable[URL], val DEFAULT_LOCALE: String = "e
    * @param template The name of the template to render.
    * @param data The data to call the template with.
    */
-  def render(template: String, data: Map[String, Any]): String = {
+  def render(template: String, data: Map[String, Any], inject: Map[String, Any]): String = {
     val locale: String = data.get(KEY_LOCALE) match {
       case Some(s: String) => s
       case _ => DEFAULT_LOCALE
     }
     data.get(KEY_DELEGATE_NS) match {
-      case Some(sd: Set[String]) => renderer(template, locale).setActiveDelegatePackageNames(sd).setData(mapToSoyData(data)).render()
-      case _ => renderer(template, locale).setData(mapToSoyData(data)).render()
+      case Some(sd: Set[String]) =>
+        renderer(template, locale)
+          .setActiveDelegatePackageNames(sd)
+          .setData(mapToSoyData(data))
+          .setIjData(mapToSoyData(inject))
+          .render()
+      case _ =>
+        renderer(template, locale)
+          .setData(mapToSoyData(data))
+          .render()
     }
   }
 
@@ -227,12 +235,15 @@ class ClosureEngine(val files: Traversable[URL], val DEFAULT_LOCALE: String = "e
    * @param template The name of the template to render.
    * @param data The data to call the template with.
    */
-  def render(template: String, data: SoyMapData): String = {
+  def render(template: String, data: SoyMapData, inject: SoyMapData): String = {
     val locale: String = data.getString(KEY_LOCALE) match {
       case s: String => s
       case _ => DEFAULT_LOCALE
     }
-    renderer(template, locale).setData(data).render()
+    renderer(template, locale)
+      .setData(data)
+      .setIjData(inject)
+      .render()
   }
 
 }
@@ -284,15 +295,26 @@ object Closure {
 
   // PUBLIC INTERFACE
   def render(template: String, data: Map[String, Any] = Map()): String =
-    plugin.api.render(template, data)
+    plugin.api.render(template, data, Map[String, Any]())
+
+  def render(template: String, data: Map[String, Any], inject: Map[String, Any]): String =
+    plugin.api.render(template, data, inject)
 
   def render(template: String, data: SoyMapData): String =
-    plugin.api.render(template, data)
+    plugin.api.render(template, data, new SoyMapData())
+
+  def render(template: String, data: SoyMapData, inject: SoyMapData): String =
+    plugin.api.render(template, data, inject)
 
   def html(template: String, data: Map[String, Any] = Map()): Html =
-    Html(render(template, data))
+    Html(render(template, data, Map[String, Any]()))
+
+  def html(template: String, data: Map[String, Any], inject: Map[String, Any]): Html =
+    Html(render(template, data, inject))
 
   def html(template: String, data: SoyMapData): Html =
-    Html(render(template, data))
+    Html(render(template, data, new SoyMapData))
 
+  def html(template: String, data: SoyMapData, inject: SoyMapData): Html =
+    Html(render(template, data, inject))
 }
