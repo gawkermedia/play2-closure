@@ -6,3 +6,8 @@ tmp
 .history
 dist
 local.sbt
+/.cache
+/.classpath
+/.project
+/.settings/
+/.target/
