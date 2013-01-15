@@ -9,7 +9,7 @@ import com.kinja.sbt.closuretemplates.SbtSoy._
 object ApplicationBuild extends Build {
 
   val appName         = "play2-closure"
-  val appVersion      = "0.11-SNAPSHOT"
+  val appVersion      = "0.11-2.1-RC2-SNAPSHOT"
 
   val appDependencies = Seq(
     // Add your project dependencies here,
