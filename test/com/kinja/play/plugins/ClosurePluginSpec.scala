@@ -86,4 +86,12 @@ class ClosurePluginSpec extends Specification {
       }
     }
   }
+
+  "Empty delegate" should {
+    "work" in {
+      running(app) {
+        Closure.render("closuretest.option", Map("delegate" -> Set(), "value" -> Some("Some value"))) === "Some value"
+      }
+    }
+  }
 }
