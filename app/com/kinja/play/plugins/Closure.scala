@@ -58,7 +58,7 @@ class ClosurePlugin(app: Application) extends Plugin {
  *
  * @param sourceDirectories List of directories where you store your templates
  */
-class ClosureEngine(val files: Traversable[URL], val DEFAULT_LOCALE: String = "en_US") {
+class ClosureEngine(val files: Traversable[URL], val DEFAULT_LOCALE: String = "en-US") {
 
   val KEY_DELEGATE_NS = "delegate"
 
