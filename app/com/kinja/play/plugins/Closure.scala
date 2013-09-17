@@ -26,6 +26,9 @@ class ClosurePlugin(app: Application) extends Plugin {
 
   lazy val engine = newEngine.build
 
+  private var engineCache: ClosureEngine = null
+  private var cacheTimestamp: Long = 0
+
   def newEngine: ClosureEngine = ClosureEngine(app.mode)
 
   /**
@@ -35,7 +38,22 @@ class ClosurePlugin(app: Application) extends Plugin {
   def api = if (app.mode == Mode.Prod) {
     engine
   } else {
-    newEngine
+    val resourceDir = "./target/scala-" +
+      util.Properties.versionString.split(" ")(1).split("\\.").take(2).mkString(".") +
+      "/resource_managed/"
+    val listFile = new File(resourceDir + "main" + ClosureEngine.resourceFile)
+    val testFile = new File(resourceDir + "test" + ClosureEngine.resourceFile)
+
+    if (listFile.lastModified > cacheTimestamp) {
+      cacheTimestamp = listFile.lastModified
+      engineCache = newEngine.build
+    } else {
+      if (testFile.lastModified > cacheTimestamp) {
+        cacheTimestamp = testFile.lastModified
+        engineCache = newEngine.build
+      }
+    }
+    engineCache
   }
 
   override def onStart() = {
@@ -252,6 +270,8 @@ class ClosureEngine(val files: Traversable[URL], val DEFAULT_LOCALE: String = "e
 
 object ClosureEngine {
 
+  val resourceFile = "/closure_templates.txt"
+
   /**
    * Creates a new engine by mode.
    */
@@ -262,7 +282,7 @@ object ClosureEngine {
 	}*/
 
   def apply: ClosureEngine = new ClosureEngine(
-    scala.io.Source.fromInputStream(getClass.getResourceAsStream("/closure_templates.txt"), "UTF-8").getLines().map(line => {
+    scala.io.Source.fromInputStream(getClass.getResourceAsStream(resourceFile), "UTF-8").getLines().map(line => {
       getClass.getResource(line)
     }).toList)
 
