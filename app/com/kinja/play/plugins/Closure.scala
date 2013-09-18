@@ -8,6 +8,11 @@ import play.api.Play.current
 
 import collection.JavaConversions._
 
+import com.google.inject.Guice
+import com.google.inject.Injector
+
+import com.google.inject.Module
+import com.google.template.soy.SoyModule
 import com.google.template.soy.SoyFileSet
 import com.google.template.soy.data.SoyListData
 import com.google.template.soy.data.SoyMapData
@@ -15,6 +20,7 @@ import com.google.template.soy.tofu.SoyTofu
 import com.google.template.soy.msgs.SoyMsgBundle
 import com.google.template.soy.msgs.SoyMsgBundleHandler
 import com.google.template.soy.xliffmsgplugin.XliffMsgPlugin
+import com.google.template.soy.xliffmsgplugin.XliffMsgPluginModule;
 
 import java.io.File
 import java.net.URL
@@ -65,7 +71,7 @@ class ClosurePlugin(app: Application) extends Plugin {
   }
 
   override lazy val enabled = {
-    !app.configuration.getString("closureplugin").filter(
+    !app.configuration.getString("closureplugin.status").filter(
       _ == "disabled"
     ).isDefined
   }
@@ -76,7 +82,7 @@ class ClosurePlugin(app: Application) extends Plugin {
  *
  * @param sourceDirectories List of directories where you store your templates
  */
-class ClosureEngine(val files: Traversable[URL], val DEFAULT_LOCALE: String = "en-US") {
+class ClosureEngine(val files: Traversable[URL], val DEFAULT_LOCALE: String = "en-US", val modules: Set[String] = Set()) {
 
   val KEY_DELEGATE_NS = "delegate"
 
@@ -173,7 +179,8 @@ class ClosureEngine(val files: Traversable[URL], val DEFAULT_LOCALE: String = "e
    * @param input List of template files
    */
   def fileSet(input: Traversable[URL]): SoyFileSet.Builder = {
-    val soyBuilder = new SoyFileSet.Builder()
+    val soyBuilder = Closure.injector.getInstance(classOf[SoyFileSet.Builder]);
+    //val soyBuilder = new SoyFileSet.Builder()
     input.foreach(file => {
       Logger("closureplugin").debug("Add " + file)
       soyBuilder.add(file)
@@ -310,6 +317,8 @@ object ClosureEngine {
  * Helper object
  */
 object Closure {
+
+  var injector: Injector = Guice.createInjector(new SoyModule(), new XliffMsgPluginModule())
 
   private def plugin = play.api.Play.maybeApplication.map { app =>
     app.plugin[ClosurePlugin].getOrElse(throw new RuntimeException("you should enable ClosurePlugin in play.plugins"))
