@@ -66,7 +66,7 @@ class ClosurePlugin(app: Application) extends Plugin {
     Logger("closureplugin").info("start on mode: " + app.mode)
     // This reprevent the new engine creatation on startup in dev mode.
     if (app.mode == Mode.Prod) {
-      api
+      //api
     }
   }
 
