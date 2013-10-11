@@ -30,19 +30,26 @@ import java.net.URL
  */
 class ClosurePlugin(app: Application) extends Plugin {
 
-  lazy val engine = newEngine.build
+  lazy val engine: ClosureEngine = newEngine.build
 
   private var engineCache: ClosureEngine = null
   private var cacheTimestamp: Long = 0
 
   def newEngine: ClosureEngine = ClosureEngine(app.mode)
 
+  def reloadEngineCache: Unit = {
+    engineCache = newEngine.build
+  }
+
   /**
    * If the app is running in production mode then always returns a same engine instance,
    * otherwise returns a brand new instance.
    */
   def api = if (app.mode == Mode.Prod) {
-    engine
+    if (engineCache == null) {
+      engineCache = engine
+    }
+    engineCache
   } else {
     val resourceDir = "./target/scala-" +
       util.Properties.versionString.split(" ")(1).split("\\.").take(2).mkString(".") +
@@ -66,7 +73,7 @@ class ClosurePlugin(app: Application) extends Plugin {
     Logger("closureplugin").info("start on mode: " + app.mode)
     // This reprevent the new engine creatation on startup in dev mode.
     if (app.mode == Mode.Prod) {
-      //api
+      api
     }
   }
 
@@ -325,6 +332,8 @@ object Closure {
   }.getOrElse(throw new RuntimeException("you should have a running app in scope a this point"))
 
   // PUBLIC INTERFACE
+  def reloadEngineCache: Unit = plugin.reloadEngineCache
+
   def render(template: String, data: Map[String, Any] = Map()): String =
     plugin.api.render(template, data, Map[String, Any]())
 
