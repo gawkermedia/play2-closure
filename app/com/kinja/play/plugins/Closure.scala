@@ -30,51 +30,57 @@ import java.net.URL
  */
 class ClosurePlugin(app: Application) extends Plugin {
 
-  lazy val engine: ClosureEngine = newEngine.build
+  private lazy val assetPath: Option[String] = app.configuration.getString("closureplugin.assetPath")
 
-  private var engineCache: ClosureEngine = null
-  private var cacheTimestamp: Long = 0
+  private var engine: ClosureEngine = null
+  private var version: String = ""
 
-  def newEngine: ClosureEngine = ClosureEngine(app.mode)
+  def log = Logger("closureplugin")
 
-  def reloadEngineCache: Unit = {
-    engineCache = newEngine.build
+  def newEngine: ClosureEngine = assetPath match {
+    // read templates from filesystem
+    case Some(rootDir) => ClosureEngine(app.mode, version, rootDir)
+    // read templates from jar
+    case _ => ClosureEngine.apply
+  }
+
+  def reloadEngine: Unit = {
+    log.info("Reloading engine")
+    engine = newEngine.build
+  }
+
+  def getVersion: String = version
+
+  def setVersion(value: String): Boolean = {
+    if (version != value) {
+      version = value
+      reloadEngine
+      true
+    } else {
+      false
+    }
   }
 
   /**
    * If the app is running in production mode then always returns a same engine instance,
    * otherwise returns a brand new instance.
    */
-  def api = if (app.mode == Mode.Prod) {
-    if (engineCache == null) {
-      engineCache = engine
+  def api: ClosureEngine = {
+    if (engine == null) {
+      reloadEngine
     }
-    engineCache
-  } else {
-    val resourceDir = "./target/scala-" +
-      util.Properties.versionString.split(" ")(1).split("\\.").take(2).mkString(".") +
-      "/resource_managed/"
-    val listFile = new File(resourceDir + "main" + ClosureEngine.resourceFile)
-    val testFile = new File(resourceDir + "test" + ClosureEngine.resourceFile)
-
-    if (listFile.lastModified > cacheTimestamp) {
-      cacheTimestamp = listFile.lastModified
-      engineCache = newEngine.build
-    } else {
-      if (testFile.lastModified > cacheTimestamp) {
-        cacheTimestamp = testFile.lastModified
-        engineCache = newEngine.build
-      }
-    }
-    engineCache
+    engine
   }
 
   override def onStart() = {
-    Logger("closureplugin").info("start on mode: " + app.mode)
+    log.info("start on mode: " + app.mode)
+
+    version = Play.application.configuration.getString("buildNumber").getOrElse(
+      throw new Exception("buildNumber config is missing"))
     // This reprevent the new engine creatation on startup in dev mode.
-    if (app.mode == Mode.Prod) {
-      api
-    }
+    //if (app.mode == Mode.Prod) {
+    api
+    //}
   }
 
   override lazy val enabled = {
@@ -189,7 +195,7 @@ class ClosureEngine(val files: Traversable[URL], val DEFAULT_LOCALE: String = "e
     val soyBuilder = Closure.injector.getInstance(classOf[SoyFileSet.Builder]);
     //val soyBuilder = new SoyFileSet.Builder()
     input.foreach(file => {
-      Logger("closureplugin").debug("Add " + file)
+      log.debug("Add " + file)
       soyBuilder.add(file)
     })
     soyBuilder
@@ -288,13 +294,24 @@ object ClosureEngine {
 
   /**
    * Creates a new engine by mode.
+   *
+   * @param mode    Play's mode (development, production, test, etc)
+   * @param version Version of the templates files a.k.a. build number
+   * @param rootDir Templates's root directory. The templates must be
+   *                in rootDir + "/" + version + "/closure" directory
+   *
+   * @return A new ClosureEngine instance
    */
-  def apply(mode: Mode.Mode): ClosureEngine = apply /*mode match {
-		case Mode.Dev => apply("app/views/closure")
-		case Mode.Test => apply("test/views")
-		case _ => apply
-	}*/
+  def apply(mode: Mode.Mode, version: String, rootDir: String): ClosureEngine = mode match {
+    case Mode.Dev => apply("app/views/closure")
+    case Mode.Test => apply("test/views/closure")
+    case _ => apply(rootDir + "/" + version + "/closure")
+  }
 
+  /**
+   * Templates are in the jar as resource
+   *
+   */
   def apply: ClosureEngine = new ClosureEngine(
     scala.io.Source.fromInputStream(getClass.getResourceAsStream(resourceFile), "UTF-8").getLines().map(line => {
       getClass.getResource(line)
@@ -303,10 +320,10 @@ object ClosureEngine {
   /**
    * Creates a new engine.
    *
-   * @param rootDir Root directory of template files.
+   * @param templateDir Directory of template files.
    */
-  def apply(rootDir: String): ClosureEngine = new ClosureEngine(
-    List(Play.getFile(rootDir)).flatMap(recursiveListFiles(_, ".soy")).map(_.toURI.toURL))
+  def apply(templateDir: String): ClosureEngine = new ClosureEngine(
+    List(new File(templateDir)).flatMap(recursiveListFiles(_, ".soy")).map(_.toURI.toURL))
 
   def recursiveListFiles(f: File, extension: String = ""): Array[File] = {
     val these = f.listFiles
@@ -332,7 +349,9 @@ object Closure {
   }.getOrElse(throw new RuntimeException("you should have a running app in scope a this point"))
 
   // PUBLIC INTERFACE
-  def reloadEngineCache: Unit = plugin.reloadEngineCache
+  def reloadEngineCache: Unit = plugin.reloadEngine
+
+  def setVersion(value: String): Boolean = plugin.setVersion(value)
 
   def render(template: String, data: Map[String, Any] = Map()): String =
     plugin.api.render(template, data, Map[String, Any]())
