@@ -195,7 +195,7 @@ class ClosureEngine(val files: Traversable[URL], val DEFAULT_LOCALE: String = "e
     val soyBuilder = Closure.injector.getInstance(classOf[SoyFileSet.Builder]);
     //val soyBuilder = new SoyFileSet.Builder()
     input.foreach(file => {
-      log.debug("Add " + file)
+      Logger("closureplugin").debug("Add " + file)
       soyBuilder.add(file)
     })
     soyBuilder
