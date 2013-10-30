@@ -305,7 +305,17 @@ object ClosureEngine {
   def apply(mode: Mode.Mode, version: String, rootDir: String): ClosureEngine = mode match {
     case Mode.Dev => apply("app/views/closure")
     case Mode.Test => apply("test/views/closure")
-    case _ => apply(rootDir + "/" + version + "/closure")
+    case _ => {
+      val templateDir = new File(rootDir + "/" + version + "/closure")
+      Logger("closureplugin").info("Checking template directory: " + templateDir)
+      if (templateDir.exists) {
+        Logger("closureplugin").info("Using '" + templateDir + "' template directory")
+        apply(templateDir)
+      } else {
+        Logger("closureplugin").info("Template directory '" + templateDir + "' does not exists. Falling back to jar.")
+        apply
+      }
+    }
   }
 
   /**
@@ -322,8 +332,16 @@ object ClosureEngine {
    *
    * @param templateDir Directory of template files.
    */
-  def apply(templateDir: String): ClosureEngine = new ClosureEngine(
-    List(new File(templateDir)).flatMap(recursiveListFiles(_, ".soy")).map(_.toURI.toURL))
+  def apply(templateDir: File): ClosureEngine = new ClosureEngine(
+    List(templateDir).flatMap(recursiveListFiles(_, ".soy")).map(_.toURI.toURL))
+
+  /**
+   * Creates a new engine.
+   *
+   * @param templateDir Directory of template files.
+   */
+  def apply(templateDir: String): ClosureEngine =
+    apply(new File(templateDir))
 
   def recursiveListFiles(f: File, extension: String = ""): Array[File] = {
     val these = f.listFiles
