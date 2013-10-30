@@ -312,7 +312,7 @@ object ClosureEngine {
         Logger("closureplugin").info("Using '" + templateDir + "' template directory")
         apply(templateDir)
       } else {
-        Logger("closureplugin").info("Template directory '" + templateDir + "' does not exists. Falling back to jar.")
+        Logger("closureplugin").error("Template directory '" + templateDir + "' does not exists. Falling back to jar.")
         apply
       }
     }
@@ -322,10 +322,17 @@ object ClosureEngine {
    * Templates are in the jar as resource
    *
    */
-  def apply: ClosureEngine = new ClosureEngine(
-    scala.io.Source.fromInputStream(getClass.getResourceAsStream(resourceFile), "UTF-8").getLines().map(line => {
-      getClass.getResource(line)
-    }).toList)
+  def apply: ClosureEngine = {
+    val res = getClass.getResourceAsStream(resourceFile)
+    if (res == null) {
+      throw new Exception("Resource file not foud: " + resourceFile)
+    } else {
+      new ClosureEngine(
+        scala.io.Source.fromInputStream(res, "UTF-8").getLines().map(line => {
+          getClass.getResource(line)
+        }).toList)
+    }
+  }
 
   /**
    * Creates a new engine.
