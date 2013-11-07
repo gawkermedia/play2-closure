@@ -9,7 +9,7 @@ import com.kinja.sbt.closuretemplates.SbtSoy._
 object ApplicationBuild extends Build {
 
   val appName         = "play2-closure"
-  val appVersion      = "0.18-2.1.0-SNAPSHOT"
+  val appVersion      = "0.18-2.2.1-SNAPSHOT"
 
   val appDependencies = Seq(
     // Add your project dependencies here,
@@ -20,7 +20,7 @@ object ApplicationBuild extends Build {
     libraryDependencies += "com.google.template" % "soy" % "2012-12-21",
     resolvers += "Gawker Public Group" at "https://nexus.kinja-ops.com/nexus/content/groups/public/",
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
-    scalaVersion := "2.10.0",
+    scalaVersion := "2.10.2",
     organization := "com.kinja.play",
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
     javacOptions ++= Seq("-Xlint:deprecation"),
