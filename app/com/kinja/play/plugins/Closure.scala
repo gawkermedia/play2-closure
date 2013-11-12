@@ -73,14 +73,18 @@ class ClosurePlugin(app: Application) extends Plugin {
   }
 
   override def onStart() = {
-    log.info("start on mode: " + app.mode)
+    if (enabled) {
+      log.info("start on mode: " + app.mode)
 
-    version = Play.application.configuration.getString("buildNumber").getOrElse(
-      throw new Exception("buildNumber config is missing"))
-    // This reprevent the new engine creatation on startup in dev mode.
-    //if (app.mode == Mode.Prod) {
-    api
-    //}
+      version = Play.application.configuration.getString("buildNumber").getOrElse(
+        throw new Exception("buildNumber config is missing"))
+      // This prevent the new engine creatation on startup in dev mode.
+      //if (app.mode == Mode.Prod) {
+      api
+      //}
+    } else {
+      log.info("plugin is disabled")
+    }
   }
 
   override lazy val enabled = {
