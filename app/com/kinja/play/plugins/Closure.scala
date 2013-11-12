@@ -99,7 +99,7 @@ class ClosurePlugin(app: Application) extends Plugin {
  *
  * @param sourceDirectories List of directories where you store your templates
  */
-class ClosureEngine(val files: Traversable[URL], val DEFAULT_LOCALE: String = "en-US", val modules: Set[String] = Set()) {
+class ClosureEngine(val files: Traversable[URL], localeDir: Option[File] = None, val DEFAULT_LOCALE: String = "en-US") {
 
   val KEY_DELEGATE_NS = "delegate"
 
@@ -210,15 +210,31 @@ class ClosureEngine(val files: Traversable[URL], val DEFAULT_LOCALE: String = "e
    */
   def builder: SoyTofu = fileSet(files).build.compileToTofu
 
+  private def msgBundleAsResource(locale: String): Option[SoyMsgBundle] = {
+    getClass.getResource("/" + locale + ".xlf") match {
+      case url: java.net.URL => {
+        val bundleHandler = new SoyMsgBundleHandler(new XliffMsgPlugin());
+        val bundle = bundleHandler.createFromResource(url)
+        Some(bundle)
+      }
+      case _ => None
+    }
+  }
+
   def msgBundle(locale: String): Option[SoyMsgBundle] = {
     if (locale != DEFAULT_LOCALE) {
-      getClass.getResource("/" + locale + ".xlf") match {
-        case url: java.net.URL => {
-          val bundleHandler = new SoyMsgBundleHandler(new XliffMsgPlugin());
-          val bundle = bundleHandler.createFromResource(url)
-          Some(bundle)
+      localeDir match {
+        case Some(dir: File) => {
+          val xlf = new File(dir.getCanonicalPath + "/" + locale + ".xlf")
+          if (xlf.exists) {
+            val bundleHandler = new SoyMsgBundleHandler(new XliffMsgPlugin());
+            val bundle = bundleHandler.createFromFile(xlf)
+            Some(bundle)
+          } else {
+            msgBundleAsResource(locale)
+          }
         }
-        case _ => None
+        case _ => msgBundleAsResource(locale)
       }
     } else {
       None
@@ -307,14 +323,20 @@ object ClosureEngine {
    * @return A new ClosureEngine instance
    */
   def apply(mode: Mode.Mode, version: String, rootDir: String): ClosureEngine = mode match {
-    case Mode.Dev => apply("app/views/closure")
-    case Mode.Test => apply("test/views/closure")
+    case Mode.Dev => apply("app/views/closure", "app/locales")
+    case Mode.Test => apply("test/views/closure", "app/locales")
     case _ => {
       val templateDir = new File(rootDir + "/" + version + "/closure")
       Logger("closureplugin").info("Checking template directory: " + templateDir)
       if (templateDir.exists) {
         Logger("closureplugin").info("Using '" + templateDir + "' template directory")
-        apply(templateDir)
+        val localeDir = new File(rootDir + "/" + version + "/locales")
+        if (localeDir.exists) {
+          Logger("closureplugin").info("Using '" + localeDir + "' locale directory")
+          apply(templateDir, Some(localeDir))
+        } else {
+          apply(templateDir, None)
+        }
       } else {
         Logger("closureplugin").error("Template directory '" + templateDir + "' does not exists. Falling back to jar.")
         apply
@@ -343,16 +365,16 @@ object ClosureEngine {
    *
    * @param templateDir Directory of template files.
    */
-  def apply(templateDir: File): ClosureEngine = new ClosureEngine(
-    List(templateDir).flatMap(recursiveListFiles(_, ".soy")).map(_.toURI.toURL))
+  def apply(templateDir: File, localeDir: Option[File]): ClosureEngine = new ClosureEngine(
+    List(templateDir).flatMap(recursiveListFiles(_, ".soy")).map(_.toURI.toURL), localeDir)
 
   /**
    * Creates a new engine.
    *
    * @param templateDir Directory of template files.
    */
-  def apply(templateDir: String): ClosureEngine =
-    apply(new File(templateDir))
+  def apply(templateDir: String, localeDir: String): ClosureEngine =
+    apply(new File(templateDir), Some(new File(localeDir)))
 
   def recursiveListFiles(f: File, extension: String = ""): Array[File] = {
     val these = f.listFiles

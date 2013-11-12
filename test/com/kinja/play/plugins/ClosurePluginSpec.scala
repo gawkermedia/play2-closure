@@ -10,7 +10,8 @@ class ClosurePluginSpec extends Specification {
 
   val app = FakeApplication(
     additionalPlugins = Seq(
-      "com.kinja.play.plugins.ClosurePlugin"))
+      "com.kinja.play.plugins.ClosurePlugin"),
+    additionalConfiguration = Map("closureplugin.status" -> "enabled"))
 
   "Render a test page" should {
     "equal 'Hello world!'" in {
