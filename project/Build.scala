@@ -4,7 +4,6 @@ import Keys._
 import play.Project._
 
 import com.typesafe.sbt.SbtScalariform._
-import com.kinja.sbt.closuretemplates.SbtSoy._
 
 object ApplicationBuild extends Build {
 
@@ -15,7 +14,7 @@ object ApplicationBuild extends Build {
     // Add your project dependencies here,
   )
 
-  val localSettings = scalariformSettings ++ soySettings ++ Seq(
+  val localSettings = scalariformSettings ++ Seq(
     // Add your own project settings here
     libraryDependencies += "com.google.template" % "soy" % "2012-12-21",
     resolvers += "Gawker Public Group" at "https://nexus.kinja-ops.com/nexus/content/groups/public/",
@@ -24,7 +23,6 @@ object ApplicationBuild extends Build {
     organization := "com.kinja.play",
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
     javacOptions ++= Seq("-Xlint:deprecation"),
-    resourceGenerators in Test <+= SoyKeys.soyCompiler in Test,
     publishTo <<= (version)(version =>
       if (version endsWith "SNAPSHOT") Some("Gawker Snapshots" at "https://nexus.kinja-ops.com/nexus/content/repositories/snapshots/")
       else                             Some("Gawker Releases" at "https://nexus.kinja-ops.com/nexus/content/repositories/releases/")
