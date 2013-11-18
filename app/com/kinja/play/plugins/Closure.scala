@@ -324,7 +324,7 @@ object ClosureEngine {
    */
   def apply(mode: Mode.Mode, version: String, rootDir: String): ClosureEngine = mode match {
     case Mode.Dev => apply("app/views/closure", "app/locales")
-    case Mode.Test => apply("test/views/closure", "app/locales")
+    case Mode.Test => apply("test/views/closure", "test/locales")
     case _ => {
       val templateDir = new File(rootDir + "/" + version + "/closure")
       Logger("closureplugin").info("Checking template directory: " + templateDir)
