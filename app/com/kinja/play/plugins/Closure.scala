@@ -25,6 +25,8 @@ import com.google.template.soy.xliffmsgplugin.XliffMsgPluginModule;
 import java.io.File
 import java.net.URL
 
+import com.kinja.soy.plugins.PluginsModule
+
 /**
  * Play plugin for Closure.
  */
@@ -393,7 +395,7 @@ object ClosureEngine {
  */
 object Closure {
 
-  var injector: Injector = Guice.createInjector(new SoyModule(), new XliffMsgPluginModule())
+  var injector: Injector = Guice.createInjector(new SoyModule(), new XliffMsgPluginModule(), new PluginsModule)
 
   private def plugin = play.api.Play.maybeApplication.map { app =>
     app.plugin[ClosurePlugin].getOrElse(throw new RuntimeException("you should enable ClosurePlugin in play.plugins"))

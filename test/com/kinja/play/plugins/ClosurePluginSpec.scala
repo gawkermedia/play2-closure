@@ -97,4 +97,12 @@ class ClosurePluginSpec extends Specification {
       }
     }
   }
+
+  "Render a test page" should {
+    "equal 'http://img.gawkerassets.com/img/foojpg/bar.jpg'" in {
+      running(app) {
+        Closure.render("closuretest.function") === "http://img.gawkerassets.com/img/foojpg/bar.jpg"
+      }
+    }
+  }
 }
