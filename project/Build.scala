@@ -17,7 +17,7 @@ object ApplicationBuild extends Build {
   val localSettings = scalariformSettings ++ Seq(
     // Add your own project settings here
     libraryDependencies ++= Seq(("com.google.template" % "soy" % "2012-12-21").exclude("asm", "asm"),
-								"soy-plugins" %% "soy-plugins" % "0.4.2-SNAPSHOT"),
+								"soy-plugins" %% "soy-plugins" % "0.4.2-RELEASE"),
     resolvers += "Gawker Public Group" at "https://nexus.kinja-ops.com/nexus/content/groups/public/",
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     scalaVersion := "2.10.2",
