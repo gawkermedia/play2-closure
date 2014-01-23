@@ -98,10 +98,10 @@ class ClosurePluginSpec extends Specification {
     }
   }
 
-  "Render a test page" should {
-    "equal 'http://img.gawkerassets.com/img/foojpg/bar.jpg'" in {
+  "Render the imageUrl function" should {
+    "equal 'http://i.kinja-img.com/gawker-media/image/upload/t_bar/foojpg.jpg'" in {
       running(app) {
-        Closure.render("closuretest.function") === "http://img.gawkerassets.com/img/foojpg/bar.jpg"
+        Closure.render("closuretest.function") === "http://i.kinja-img.com/gawker-media/image/upload/t_bar/foojpg.jpg"
       }
     }
   }
