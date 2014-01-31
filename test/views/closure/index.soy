@@ -45,6 +45,32 @@ Hello world!
 {/template}
 
 /**
+ * List in map test template
+ * 
+ * @param name Name of the list
+ * @param map A map with a list
+ */
+{template .listInMap}
+{$name}:{sp}
+{foreach $item in $map.items}
+	{$item}{if not isLast($item)},{sp}{/if}
+{/foreach}
+{/template}
+
+/**
+ * List test template
+ * 
+ * @param name Name of the list
+ * @param soylist A soy list
+ */
+{template .soylist}
+{$name}:{sp}
+{foreach $item in $soylist}
+	{$item}{if not isLast($item)},{sp}{/if}
+{/foreach}
+{/template}
+
+/**
  * locale test
  */
 {template .locale}
