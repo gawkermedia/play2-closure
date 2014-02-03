@@ -135,6 +135,8 @@ class ClosureEngine(val files: Traversable[URL], localeDir: Option[File] = None,
       case i: Int => sl.add(i)
       case b: Boolean => sl.add(b)
       case s: Set[Any] => sl.add(listToSoyData(s.toList))
+      case m: SoyMapData => sl.add(m)
+      case l: SoyListData => sl.add(l)
       case None => null
       case null => null
       case a: AnyRef if a != null => sl.add(mapToSoyData(getCCParams(a)))
@@ -164,6 +166,8 @@ class ClosureEngine(val files: Traversable[URL], localeDir: Option[File] = None,
       case i: Int => sm.put(k, i)
       case b: Boolean => sm.put(k, b)
       case s: Set[Any] => sm.put(k, listToSoyData(s.toList))
+      case m: SoyMapData => sm.put(k, m)
+      case l: SoyListData => sm.put(k, l)
       case None => null
       case null => null
       case a: AnyRef if a != null => sm.put(k, mapToSoyData(getCCParams(a)))
@@ -298,10 +302,13 @@ class ClosureEngine(val files: Traversable[URL], localeDir: Option[File] = None,
    * @param data The data to call the template with.
    */
   def render(template: String, data: SoyMapData, inject: SoyMapData): String = {
-    val locale: String = data.getString(KEY_LOCALE) match {
-      case s: String => s
-      case _ => DEFAULT_LOCALE
-    }
+    val locale: String =
+      try {
+        data.getString(KEY_LOCALE)
+      } catch {
+        case _: IllegalArgumentException => DEFAULT_LOCALE
+      }
+
     renderer(template, locale)
       .setData(data)
       .setIjData(inject)
