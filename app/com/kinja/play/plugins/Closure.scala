@@ -294,6 +294,7 @@ class ClosureEngine(val files: Traversable[URL], localeDir: Option[File] = None,
    * @param data The data to call the template with.
    */
   def render(template: String, data: Map[String, Any], inject: Map[String, Any]): String = {
+    log.debug("Rendering " + template)
     val locale: String = data.get(KEY_LOCALE) match {
       case Some(s: String) => s
       case _ => DEFAULT_LOCALE
