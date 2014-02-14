@@ -27,6 +27,21 @@ import java.net.URL
 
 import com.kinja.soy.plugins.PluginsModule
 
+class InvalidClosureValueException(obj: Any, path: Option[String] = None) extends Exception {
+
+  private val maxMessageLength: Int = 100
+
+  private val clazz: String = obj.getClass.getName
+
+  private val objAsString: String = obj.toString match {
+    case s if s.size > maxMessageLength => s.take(maxMessageLength) + "..."
+    case s => s
+  }
+
+  override val getMessage: String = "Unsupported value [" + clazz + "]" +
+    path.map(" at " + _).getOrElse("") + ": " + objAsString
+}
+
 /**
  * Play plugin for Closure.
  */
@@ -107,80 +122,83 @@ class ClosureEngine(val files: Traversable[URL], localeDir: Option[File] = None,
 
   val KEY_LOCALE = "locale"
 
+  private val log = Logger("closureplugin")
+
+  @inline private def message(path: String, a: Any): String =
+    path.tail + " <- " + {
+      a match {
+        case null => "null"
+        case s: String if s.isEmpty => "(empty string)"
+        case _ =>
+          a.toString match {
+            case s if s.size > 100 => s.take(100) + "... (" + s.size + " bytes)"
+            case s => s
+          }
+      }
+    }
+
   /**
    * The current compiled templates.
    */
   protected lazy val tofu: SoyTofu = builder
 
-  /**
-   * Converts a case class into a map.
-   *
-   * @param cc A case class instance.
-   */
-  protected def getCCParams(cc: AnyRef): Map[String, Any] = {
-    (Map[String, Any]() /: cc.getClass.getDeclaredFields) { (a, f) =>
-      f.setAccessible(true)
-      a + (f.getName -> f.get(cc))
-    }
-  }
-
-  protected def addSoyValue(sl: SoyListData, a: Any): Unit = {
+  private def addSoyValue(sl: SoyListData, a: Any, path: => String): Unit = {
+    log.debug(message(path, a))
     a match {
-      case mm: Map[String, Any] => sl.add(mapToSoyData(mm))
-      case l: List[Any] => sl.add(listToSoyData(l))
+      case mm: Map[String, Any] => sl.add(mapToSoyData(mm, path))
+      case l: List[Any] => sl.add(listToSoyData(l, path))
       case s: String => sl.add(s)
       case d: Double => sl.add(d)
       case f: Float => sl.add(f)
       case l: Long => sl.add(l.toString)
       case i: Int => sl.add(i)
       case b: Boolean => sl.add(b)
-      case s: Set[Any] => sl.add(listToSoyData(s.toList))
+      case s: Set[Any] => sl.add(listToSoyData(s.toList, path))
       case m: SoyMapData => sl.add(m)
       case l: SoyListData => sl.add(l)
       case None => null
       case null => null
-      case a: AnyRef if a != null => sl.add(mapToSoyData(getCCParams(a)))
-      case _ => throw new Exception("Invalid Soy object: " + a)
+      case _ => throw new InvalidClosureValueException(a, Some(path.tail))
     }
   }
 
-  protected def listToSoyData(l: List[Any]): SoyListData = {
+  private def listToSoyData(l: List[Any], path: => String): SoyListData = {
     val sl = new SoyListData()
     l.foreach { v =>
       v match {
-        case Some(a: Any) => addSoyValue(sl, a)
-        case _ => addSoyValue(sl, v)
+        case Some(a: Any) => addSoyValue(sl, a, path + "[]")
+        case _ => addSoyValue(sl, v, path + "[]")
       }
     }
     sl
   }
 
-  protected def putSoyValue(sm: SoyMapData, k: String, a: Any): Unit = {
+  private def putSoyValue(sm: SoyMapData, k: String, a: Any, path: => String): Unit = {
+    log.debug(message(path, a))
     a match {
-      case mm: Map[String, Any] => sm.put(k, mapToSoyData(mm))
-      case l: List[Any] => sm.put(k, listToSoyData(l))
+      case mm: Map[String, Any] => sm.put(k, mapToSoyData(mm, path))
+      case l: List[Any] => sm.put(k, listToSoyData(l, path))
       case s: String => sm.put(k, s)
       case d: Double => sm.put(k, d)
       case f: Float => sm.put(k, f)
       case l: Long => sm.put(k, l.toString)
       case i: Int => sm.put(k, i)
       case b: Boolean => sm.put(k, b)
-      case s: Set[Any] => sm.put(k, listToSoyData(s.toList))
+      case s: Set[Any] => sm.put(k, listToSoyData(s.toList, path))
       case m: SoyMapData => sm.put(k, m)
       case l: SoyListData => sm.put(k, l)
       case None => null
       case null => null
-      case a: AnyRef if a != null => sm.put(k, mapToSoyData(getCCParams(a)))
-      case _ => throw new Exception("Invalid Soy object: " + a)
+      case _ => throw new InvalidClosureValueException(a, Some(path.tail))
     }
   }
 
-  protected def mapToSoyData(m: Map[String, Any]): SoyMapData = {
+  private def mapToSoyData(m: Map[String, Any], path: => String): SoyMapData = {
     val sm = new SoyMapData()
     m.keys.foreach { k =>
       m(k) match {
-        case Some(a: Any) => putSoyValue(sm, k, a)
-        case _ => putSoyValue(sm, k, m(k))
+        case Some(a: Any) => putSoyValue(sm, k, a, path + "." + k)
+        case _ => putSoyValue(sm, k, m(k), path + "." + k)
       }
     }
     sm
@@ -276,6 +294,7 @@ class ClosureEngine(val files: Traversable[URL], localeDir: Option[File] = None,
    * @param data The data to call the template with.
    */
   def render(template: String, data: Map[String, Any], inject: Map[String, Any]): String = {
+    log.debug("Rendering " + template)
     val locale: String = data.get(KEY_LOCALE) match {
       case Some(s: String) => s
       case _ => DEFAULT_LOCALE
@@ -284,13 +303,13 @@ class ClosureEngine(val files: Traversable[URL], localeDir: Option[File] = None,
       case Some(sd: Set[String]) =>
         renderer(template, locale)
           .setActiveDelegatePackageNames(sd)
-          .setData(mapToSoyData(data))
-          .setIjData(mapToSoyData(inject))
+          .setData(mapToSoyData(data, path = ""))
+          .setIjData(mapToSoyData(inject, path = ""))
           .render()
       case _ =>
         renderer(template, locale)
-          .setData(mapToSoyData(data))
-          .setIjData(mapToSoyData(inject))
+          .setData(mapToSoyData(data, path = ""))
+          .setIjData(mapToSoyData(inject, path = ""))
           .render()
     }
   }
