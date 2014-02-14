@@ -4,6 +4,7 @@ import Keys._
 import play.Project._
 
 import com.typesafe.sbt.SbtScalariform._
+import scalariform.formatter.preferences.{ FormattingPreferences, IndentWithTabs }
 
 object ApplicationBuild extends Build {
 
@@ -27,7 +28,8 @@ object ApplicationBuild extends Build {
     publishTo <<= (version)(version =>
       if (version endsWith "SNAPSHOT") Some("Gawker Snapshots" at "https://nexus.kinja-ops.com/nexus/content/repositories/snapshots/")
       else                             Some("Gawker Releases" at "https://nexus.kinja-ops.com/nexus/content/repositories/releases/")
-    )
+    ),
+    ScalariformKeys.preferences := FormattingPreferences().setPreference(IndentWithTabs, true)
   )
 
   val main = play.Project(appName, appVersion, appDependencies).settings(
