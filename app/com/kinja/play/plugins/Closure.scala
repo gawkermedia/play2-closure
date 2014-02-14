@@ -146,14 +146,14 @@ class ClosureEngine(val files: Traversable[URL], localeDir: Option[File] = None,
     log.debug(message(path, a))
     a match {
       case mm: Map[String, Any] => sl.add(mapToSoyData(mm, path))
-      case l: List[Any] => sl.add(listToSoyData(l, path))
+      case l: Seq[Any] => sl.add(seqToSoyData(l, path))
       case s: String => sl.add(s)
       case d: Double => sl.add(d)
       case f: Float => sl.add(f)
       case l: Long => sl.add(l.toString)
       case i: Int => sl.add(i)
       case b: Boolean => sl.add(b)
-      case s: Set[Any] => sl.add(listToSoyData(s.toList, path))
+      case s: Set[Any] => sl.add(seqToSoyData(s.toSeq, path))
       case m: SoyMapData => sl.add(m)
       case l: SoyListData => sl.add(l)
       case None => null
@@ -162,7 +162,7 @@ class ClosureEngine(val files: Traversable[URL], localeDir: Option[File] = None,
     }
   }
 
-  private def listToSoyData(l: List[Any], path: => String): SoyListData = {
+  private def seqToSoyData(l: Seq[Any], path: => String): SoyListData = {
     val sl = new SoyListData()
     l.foreach { v =>
       v match {
@@ -177,14 +177,14 @@ class ClosureEngine(val files: Traversable[URL], localeDir: Option[File] = None,
     log.debug(message(path, a))
     a match {
       case mm: Map[String, Any] => sm.put(k, mapToSoyData(mm, path))
-      case l: List[Any] => sm.put(k, listToSoyData(l, path))
+      case l: Seq[Any] => sm.put(k, seqToSoyData(l, path))
       case s: String => sm.put(k, s)
       case d: Double => sm.put(k, d)
       case f: Float => sm.put(k, f)
       case l: Long => sm.put(k, l.toString)
       case i: Int => sm.put(k, i)
       case b: Boolean => sm.put(k, b)
-      case s: Set[Any] => sm.put(k, listToSoyData(s.toList, path))
+      case s: Set[Any] => sm.put(k, seqToSoyData(s.toSeq, path))
       case m: SoyMapData => sm.put(k, m)
       case l: SoyListData => sm.put(k, l)
       case None => null
