@@ -105,8 +105,7 @@ class ClosurePlugin(app: Application) extends Plugin {
 	}
 
 	override lazy val enabled = {
-		!app.configuration.getString("closureplugin.status").filter(
-			_ == "disabled").isDefined
+		!app.configuration.getString("closureplugin.status").filter(_ == "disabled").isDefined
 	}
 }
 
