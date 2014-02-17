@@ -25,6 +25,8 @@ import com.google.template.soy.xliffmsgplugin.XliffMsgPluginModule;
 import java.io.File
 import java.net.URL
 
+import com.kinja.soy.{ SoyNull, SoyString, SoyBoolean, SoyInt, SoyFloat, SoyDouble, SoyList, SoyMap }
+
 import com.kinja.soy.plugins.PluginsModule
 
 class InvalidClosureValueException(obj: Any, path: Option[String] = None) extends Exception {
@@ -145,6 +147,14 @@ class ClosureEngine(val files: Traversable[URL], localeDir: Option[File] = None,
   private def addSoyValue(sl: SoyListData, a: Any, path: => String): Unit = {
     log.debug(message(path, a))
     a match {
+      case s: SoyMap => sl.add(s.build)
+      case s: SoyList => sl.add(s.build)
+      case s: SoyString => Option(s.build) map (v => sl.add(v)) // prevent NullPointerException
+      case s: SoyBoolean => sl.add(s.build)
+      case s: SoyInt => sl.add(s.build)
+      case s: SoyFloat => sl.add(s.build)
+      case s: SoyDouble => sl.add(s.build)
+      case SoyNull => // do nothing
       case mm: Map[String, Any] => sl.add(mapToSoyData(mm, path))
       case l: Seq[Any] => sl.add(seqToSoyData(l, path))
       case s: String => sl.add(s)
@@ -156,8 +166,8 @@ class ClosureEngine(val files: Traversable[URL], localeDir: Option[File] = None,
       case s: Set[Any] => sl.add(seqToSoyData(s.toSeq, path))
       case m: SoyMapData => sl.add(m)
       case l: SoyListData => sl.add(l)
-      case None => null
-      case null => null
+      case None => // do nothing
+      case null => // do nothing
       case _ => throw new InvalidClosureValueException(a, Some(path.tail))
     }
   }
@@ -176,6 +186,14 @@ class ClosureEngine(val files: Traversable[URL], localeDir: Option[File] = None,
   private def putSoyValue(sm: SoyMapData, k: String, a: Any, path: => String): Unit = {
     log.debug(message(path, a))
     a match {
+      case s: SoyMap => sm.put(k, s.build)
+      case s: SoyList => sm.put(k, s.build)
+      case s: SoyString => Option(s.build) map (v => sm.put(k, v)) // prevent NullPointerException
+      case s: SoyBoolean => sm.put(k, s.build)
+      case s: SoyInt => sm.put(k, s.build)
+      case s: SoyFloat => sm.put(k, s.build)
+      case s: SoyDouble => sm.put(k, s.build)
+      case SoyNull => // do nothing
       case mm: Map[String, Any] => sm.put(k, mapToSoyData(mm, path))
       case l: Seq[Any] => sm.put(k, seqToSoyData(l, path))
       case s: String => sm.put(k, s)
@@ -187,8 +205,8 @@ class ClosureEngine(val files: Traversable[URL], localeDir: Option[File] = None,
       case s: Set[Any] => sm.put(k, seqToSoyData(s.toSeq, path))
       case m: SoyMapData => sm.put(k, m)
       case l: SoyListData => sm.put(k, l)
-      case None => null
-      case null => null
+      case None => // do nothing
+      case null => // do nothing
       case _ => throw new InvalidClosureValueException(a, Some(path.tail))
     }
   }
@@ -443,6 +461,12 @@ object Closure {
 
   def render(template: String, data: SoyMapData, inject: SoyMapData): String =
     plugin.api.render(template, data, inject)
+
+  def render(template: String, data: SoyMap): String =
+    plugin.api.render(template, data.build, new SoyMapData())
+
+  def render(template: String, data: SoyMap, inject: SoyMap): String =
+    plugin.api.render(template, data.build, inject.build)
 
   def html(template: String, data: Map[String, Any] = Map()): Html =
     Html(render(template, data, Map[String, Any]()))

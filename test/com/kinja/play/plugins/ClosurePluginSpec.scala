@@ -5,18 +5,12 @@ import org.specs2.mutable._
 
 import play.api.test._
 import play.api.test.Helpers._
+import com.kinja.TestApp
 
 import com.google.template.soy.data.SoyListData
 import com.google.template.soy.data.SoyMapData
 
-class ClosurePluginSpec extends Specification {
-
-  val app = FakeApplication(
-    additionalPlugins = Seq(
-      "com.kinja.play.plugins.ClosurePlugin"),
-    additionalConfiguration = Map(
-      "closureplugin.assetPath" -> "/var/tmp/kinja-mantle",
-      "closureplugin.status" -> "enabled"))
+class ClosurePluginSpec extends Specification with TestApp {
 
   "Render a test page" should {
     "equal 'Hello world!'" in {
