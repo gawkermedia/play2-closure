@@ -19,7 +19,7 @@ object ApplicationBuild extends Build {
     libraryDependencies ++= Seq(
       ("com.google.template" % "soy" % "2012-12-21").exclude("asm", "asm"),
       "soy-plugins" %% "soy-plugins" % "0.4.6-RELEASE",
-      "com.kinja" %% "soy" % "0.2-RELEASE"),
+      "com.kinja" %% "soy" % "0.2.1-RELEASE"),
     resolvers += "Gawker Public Group" at "https://nexus.kinja-ops.com/nexus/content/groups/public/",
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     scalaVersion := "2.10.2",
