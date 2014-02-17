@@ -1,0 +1,56 @@
+{namespace soyrender}
+
+/**
+ * Tests rendering SoyBoolean
+ * @param value Test value
+ */
+{template .valueBoolean}
+Value is: {if $value}TRUE{else}FALSE{/if}
+{/template}
+
+/**
+ * Tests rendering SoyList
+ * @param list Test list
+ */
+{template .valueList}
+List is: {foreach $item in $list}
+  {if not isFirst($item)},{sp}{/if}
+  {call .valueListItem}
+  	{param item: $item /}
+  {/call}
+{ifempty}
+  EMPTY
+{/foreach}
+{/template}
+
+/**
+ * List item for testing SoyList
+ * @param item List item
+ */
+{template .valueListItem}
+{if $item}{$item}{else}UNDEFINED{/if}
+{/template}
+
+/**
+ * Tests rendering SoyNull
+ * @param value Test value
+ */
+{template .valueNull}
+Value is: {if $value}NOT NULL{else}NULL{/if}
+{/template}
+
+/**
+ * Tests rendering SoyNumber
+ * @param value Test value
+ */
+{template .valueNumber}
+Value is: {$value}
+{/template}
+
+/**
+ * Tests rendering SoyString
+ * @param value Test value
+ */
+{template .valueString}
+Value is: {if $value}{$value}{else}UNDEFINED{/if}
+{/template}
