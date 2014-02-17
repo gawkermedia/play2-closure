@@ -163,7 +163,7 @@ class ClosureEngine(val files: Traversable[URL], localeDir: Option[File] = None,
       case l: Long => sl.add(l.toString)
       case i: Int => sl.add(i)
       case b: Boolean => sl.add(b)
-      case s: Set[Any] => sl.add(seqToSoyData(s.toSeq, path))
+      case s: Set[_] => sl.add(seqToSoyData(s.toSeq, path))
       case m: SoyMapData => sl.add(m)
       case l: SoyListData => sl.add(l)
       case None => // do nothing
@@ -202,7 +202,7 @@ class ClosureEngine(val files: Traversable[URL], localeDir: Option[File] = None,
       case l: Long => sm.put(k, l.toString)
       case i: Int => sm.put(k, i)
       case b: Boolean => sm.put(k, b)
-      case s: Set[Any] => sm.put(k, seqToSoyData(s.toSeq, path))
+      case s: Set[_] => sm.put(k, seqToSoyData(s.toSeq, path))
       case m: SoyMapData => sm.put(k, m)
       case l: SoyListData => sm.put(k, l)
       case None => // do nothing
@@ -216,7 +216,7 @@ class ClosureEngine(val files: Traversable[URL], localeDir: Option[File] = None,
     m.keys.foreach { k =>
       m(k) match {
         case Some(a: Any) => putSoyValue(sm, k, a, path + "." + k)
-        case _ => putSoyValue(sm, k, m(k), path + "." + k)
+        case a => putSoyValue(sm, k, a, path + "." + k)
       }
     }
     sm
