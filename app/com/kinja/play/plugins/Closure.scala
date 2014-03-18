@@ -12,7 +12,6 @@ import com.google.inject.Guice
 import com.google.inject.Injector
 
 import com.google.inject.Module
-import com.google.template.soy.SoyModule
 import com.google.template.soy.SoyFileSet
 import com.google.template.soy.data.SoyListData
 import com.google.template.soy.data.SoyMapData
@@ -20,15 +19,12 @@ import com.google.template.soy.tofu.SoyTofu
 import com.google.template.soy.msgs.SoyMsgBundle
 import com.google.template.soy.msgs.SoyMsgBundleHandler
 import com.google.template.soy.xliffmsgplugin.XliffMsgPlugin
-import com.google.template.soy.xliffmsgplugin.XliffMsgPluginModule;
 
 import java.io.File
 import java.net.URL
 import java.lang.Class
 
 import com.kinja.soy.{ SoyNull, SoyString, SoyBoolean, SoyInt, SoyFloat, SoyDouble, SoyList, SoyMap }
-
-import com.kinja.soy.plugins.PluginsModule
 
 class InvalidClosureValueException(obj: Any, path: Option[String] = None) extends Exception {
 
