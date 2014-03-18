@@ -24,6 +24,7 @@ import com.google.template.soy.xliffmsgplugin.XliffMsgPluginModule;
 
 import java.io.File
 import java.net.URL
+import java.lang.Class
 
 import com.kinja.soy.{ SoyNull, SoyString, SoyBoolean, SoyInt, SoyFloat, SoyDouble, SoyList, SoyMap }
 
@@ -47,9 +48,16 @@ class InvalidClosureValueException(obj: Any, path: Option[String] = None) extend
 /**
  * Play plugin for Closure.
  */
-class ClosurePlugin(app: Application, modules: Seq[com.google.inject.Module]) extends Plugin {
+class ClosurePlugin(app: Application) extends Plugin {
 
 	private lazy val assetPath: Option[String] = app.configuration.getString("closureplugin.assetPath")
+
+	private lazy val modules: Seq[com.google.inject.Module] =
+		app.configuration.getStringList("closureplugin.plugins").map(_.flatMap(s =>
+			Class.forName(s).newInstance() match {
+				case e: com.google.inject.Module => List(e)
+				case _ => List.empty
+			})).getOrElse(Seq.empty)
 
 	private var engine: ClosureEngine = null
 	private var version: String = ""
