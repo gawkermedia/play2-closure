@@ -13,6 +13,3 @@ addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.2.1")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-scalariform" % "1.2.0")
 
-// Scalastyle
-addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.3.3-kinja")
-
