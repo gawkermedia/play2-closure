@@ -54,6 +54,8 @@ class ClosurePlugin(app: Application) extends Plugin {
 				Class.forName(s).newInstance()
 			} catch {
 				case e: ClassNotFoundException => null
+				case e: InstantiationException => null
+				case e: IllegalAccessException => null
 			}) match {
 				case e: com.google.inject.Module => List(e)
 				case _ => List.empty
