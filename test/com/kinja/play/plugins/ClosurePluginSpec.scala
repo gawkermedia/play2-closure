@@ -157,12 +157,4 @@ class ClosurePluginSpec extends Specification with TestApp {
       }
     }
   }
-
-  "Render the imageUrl function" should {
-    "equal 'http://i.kinja-img.com/gawker-media/image/upload/t_bar/foojpg.jpg'" in {
-      running(app) {
-        Closure.render("closuretest.function") === "http://i.kinja-img.com/gawker-media/image/upload/t_bar/foojpg.jpg"
-      }
-    }
-  }
 }
