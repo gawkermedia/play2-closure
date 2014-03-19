@@ -92,3 +92,14 @@ object HotSwapController extends Controller {
 The hot-swapping can now be implemented as a separate build job, which copies the templates to your productions servers
 in the appropriate directory under a new build number, and then call the hotswap API call to set the new build number
 on all production servers.
+
+### Plugins
+
+This plugin supports Closure Template plugins. Play2-closure takes a list of classpaths in closureplugin.plugins. For
+example, to add the XliffMsgPlugin, you should add this to your conf/application-live.conf:
+
+```
+closureplugin.plugins = ["com.google.template.soy.xliffmsgplugin.XliffMsgPlugin"]
+```
+
+Incorrect classpaths or classes without a default constructor will be ignored.
