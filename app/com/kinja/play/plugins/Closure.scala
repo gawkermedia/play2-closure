@@ -263,7 +263,7 @@ class ClosureEngine(
   }
 
   /**
-   * Compile the current file set - which stored in the files lazy val -	into Java object.
+   * Compile the current file set - which stored in the files lazy val - into Java object.
    */
   def builder: SoyTofu = fileSet(files).build.compileToTofu
 
@@ -301,8 +301,8 @@ class ClosureEngine(
   /**
    * Creates a new Renderer for a template without any msgbundle.
    *
-   * @param template	The name of the template to render.
-   * 									You can use names like "closuretest.index.soy", the .soy extension will be removed.
+   * @param template The name of the template to render.
+   *                 You can use names like "closuretest.index.soy", the .soy extension will be removed.
    */
   def newRenderer(template: String): SoyTofu.Renderer =
     tofu.newRenderer(template.replace(".soy", ""))
@@ -348,7 +348,7 @@ class ClosureEngine(
   }
 
   /**
-   * 	Renders a template.
+   * Renders a template.
    *
    * @param template The name of the template to render.
    * @param data The data to call the template with.
@@ -376,10 +376,10 @@ object ClosureEngine {
   /**
    * Creates a new engine by mode.
    *
-   * @param mode		Play's mode (development, production, test, etc)
+   * @param mode Play's mode (development, production, test, etc)
    * @param version Version of the templates files a.k.a. build number
    * @param rootDir Templates's root directory. The templates must be
-   * 								in rootDir + "/" + version + "/closure" directory
+   *        in rootDir + "/" + version + "/closure" directory
    *
    * @return A new ClosureEngine instance
    */
@@ -454,7 +454,7 @@ object ClosureEngine {
 }
 
 /**
- * Helper class
+ * Helper object
  */
 object Closure {
 
