@@ -51,7 +51,7 @@ class ClosurePlugin(app: Application) extends Plugin {
   private lazy val modules: Seq[com.google.inject.Module] =
     app.configuration.getStringList("closureplugin.plugins").map(_.flatMap(s =>
       (try {
-        Class.forName(s).newInstance()
+        app.classloader.loadClass(s).newInstance()
       } catch {
         case e: ClassNotFoundException => null
         case e: InstantiationException => null
