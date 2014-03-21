@@ -56,11 +56,14 @@ class ClosurePlugin(app: Application) extends Plugin {
   private lazy val modules: Seq[com.google.inject.Module] =
     app.configuration.getStringList("closureplugin.plugins").map(_.flatMap(s =>
       (try {
-        Class.forName(s).newInstance()
+        app.classloader.loadClass(s).newInstance()
       } catch {
-        case e: ClassNotFoundException => null
-        case e: InstantiationException => null
-        case e: IllegalAccessException => null
+        case e: ClassNotFoundException =>
+          throw new ClosurePluginException("Plugin class: " + s + " not found.")
+        case e: InstantiationException =>
+          throw new ClosurePluginException("Plugin class: " + s + " has no default constructor.")
+        case e: IllegalAccessException =>
+          throw new ClosurePluginException("Plugin class: " + s + " has no accessible constructor.")
       }) match {
         case e: com.google.inject.Module => List(e)
         case _ => List.empty
@@ -504,3 +507,4 @@ object Closure {
     Html(render(template, data, inject))
 }
 
+class ClosurePluginException(msg: String) extends Exception(msg)
