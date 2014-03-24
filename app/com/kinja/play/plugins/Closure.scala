@@ -49,7 +49,7 @@ class ClosurePlugin(app: Application) extends Plugin {
   private lazy val soyPaths: List[String] =
     app.configuration.getStringList("closureplugin.soyPaths").getOrElse {
       val defaults = new java.util.LinkedList[java.lang.String]()
-      defaults.add("")
+      defaults.add("app/views/closure")
       defaults
     }.toList
 
@@ -395,7 +395,10 @@ object ClosureEngine {
     version: String,
     rootDir: String,
     modules: Seq[com.google.inject.Module]): ClosureEngine = mode match {
-    case Mode.Dev => apply(soyPaths, "app/locales", modules)
+    case Mode.Dev => soyPaths match {
+      case sp: List[String] if sp.nonEmpty => apply(sp, "app/locales", modules)
+      case _ => apply(List("app/views/closure"), "app/locales", modules)
+    }
     case Mode.Test => apply(List("test/views/closure"), "test/locales", modules)
     case _ =>
       val templateDir = new File(rootDir + "/" + version + "/closure")
@@ -446,7 +449,7 @@ object ClosureEngine {
    */
   def apply(templateDirs: List[String], localeDir: String, modules: Seq[com.google.inject.Module]): ClosureEngine =
     apply(
-      templateDirs.map(td => new File(td + "app/views/closure")),
+      templateDirs.map(td => new File(td)),
       Some(new File(localeDir)),
       modules = modules)
 
