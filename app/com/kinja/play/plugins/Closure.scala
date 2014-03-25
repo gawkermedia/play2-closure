@@ -401,19 +401,24 @@ object ClosureEngine {
     }
     case Mode.Test => apply(List("test/views/closure"), "test/locales", modules)
     case _ =>
-      val templateDir = new File(rootDir + "/" + version + "/closure")
-      Logger("closureplugin").info("Checking template directory: " + templateDir)
-      if (templateDir.exists) {
-        Logger("closureplugin").info("Using '" + templateDir + "' template directory")
+      val templateDirs = soyPaths match {
+        case sp: List[String] if sp.nonEmpty =>
+          sp.map(p => new File(rootDir + "/" + version + p + "/closure"))
+        case _ => List(new File(rootDir + "/" + version + "/closure"))
+      }
+      val existingTemplateDirs = templateDirs.filter(_.exists)
+      Logger("closureplugin").info("Checking template directory: " + templateDirs)
+      if (existingTemplateDirs.nonEmpty) {
+        Logger("closureplugin").info("Using '" + existingTemplateDirs + "' template directory")
         val localeDir = new File(rootDir + "/" + version + "/locales")
         if (localeDir.exists) {
           Logger("closureplugin").info("Using '" + localeDir + "' locale directory")
-          apply(List(templateDir), Some(localeDir), modules = modules)
+          apply(existingTemplateDirs, Some(localeDir), modules = modules)
         } else {
-          apply(List(templateDir), None, modules = modules)
+          apply(existingTemplateDirs, None, modules = modules)
         }
       } else {
-        Logger("closureplugin").error("Template directory '" + templateDir + "' does not exists. Falling back to jar.")
+        Logger("closureplugin").error("Template directory '" + templateDirs + "' does not exists. Falling back to jar.")
         apply(modules)
       }
   }
