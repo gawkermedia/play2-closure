@@ -3,7 +3,6 @@ package com.kinja.play.plugins
 
 import play.api._
 import play.api.templates._
-import play.api.Configuration._
 import play.api.Play.current
 
 import collection.JavaConversions._
@@ -47,6 +46,12 @@ class InvalidClosureValueException(obj: Any, path: Option[String] = None) extend
 class ClosurePlugin(app: Application) extends Plugin {
 
   private lazy val assetPath: Option[String] = app.configuration.getString("closureplugin.assetPath")
+  private lazy val soyPaths: List[String] =
+    app.configuration.getStringList("closureplugin.soyPaths").getOrElse {
+      val defaults = new java.util.LinkedList[java.lang.String]()
+      defaults.add("app/views/closure")
+      defaults
+    }.toList
 
   private lazy val modules: Seq[com.google.inject.Module] =
     app.configuration.getStringList("closureplugin.plugins").map(_.flatMap(s =>
@@ -71,12 +76,12 @@ class ClosurePlugin(app: Application) extends Plugin {
 
   def newEngine: ClosureEngine = assetPath match {
     // read templates from filesystem
-    case Some(rootDir) => ClosureEngine(app.mode, version, rootDir, modules)
+    case Some(rootDir) => ClosureEngine(app.mode, soyPaths, version, rootDir, modules)
     // read templates from jar
     case _ => ClosureEngine.apply(modules)
   }
 
-  def reloadEngine: Unit = {
+  def reloadEngine(): Unit = {
     log.info("Reloading engine")
     engine = newEngine.build
   }
@@ -86,7 +91,7 @@ class ClosurePlugin(app: Application) extends Plugin {
   def setVersion(value: String): Boolean = {
     if (version != value) {
       version = value
-      reloadEngine
+      reloadEngine()
       true
     } else {
       false
@@ -99,7 +104,7 @@ class ClosurePlugin(app: Application) extends Plugin {
    */
   def api: ClosureEngine = {
     if (engine == null) {
-      reloadEngine
+      reloadEngine()
     }
     engine
   }
@@ -128,7 +133,7 @@ class ClosurePlugin(app: Application) extends Plugin {
 /**
  * Closure Template API
  *
- * @param sourceDirectories List of directories where you store your templates
+ * @param files List of your templates
  */
 class ClosureEngine(
     val files: Traversable[URL],
@@ -256,7 +261,7 @@ class ClosureEngine(
    * @param input List of template files
    */
   def fileSet(input: Traversable[URL]): SoyFileSet.Builder = {
-    val soyBuilder = injector.getInstance(classOf[SoyFileSet.Builder]);
+    val soyBuilder = injector.getInstance(classOf[SoyFileSet.Builder])
     //val soyBuilder = new SoyFileSet.Builder()
     input.foreach(file => {
       Logger("closureplugin").debug("Add " + file)
@@ -272,11 +277,10 @@ class ClosureEngine(
 
   private def msgBundleAsResource(locale: String): Option[SoyMsgBundle] = {
     getClass.getResource("/" + locale + ".xlf") match {
-      case url: java.net.URL => {
-        val bundleHandler = new SoyMsgBundleHandler(new XliffMsgPlugin());
+      case url: java.net.URL =>
+        val bundleHandler = new SoyMsgBundleHandler(new XliffMsgPlugin())
         val bundle = bundleHandler.createFromResource(url)
         Some(bundle)
-      }
       case _ => None
     }
   }
@@ -284,16 +288,15 @@ class ClosureEngine(
   def msgBundle(locale: String): Option[SoyMsgBundle] = {
     if (locale != DEFAULT_LOCALE) {
       localeDir match {
-        case Some(dir: File) => {
+        case Some(dir: File) =>
           val xlf = new File(dir.getCanonicalPath + "/" + locale + ".xlf")
           if (xlf.exists) {
-            val bundleHandler = new SoyMsgBundleHandler(new XliffMsgPlugin());
+            val bundleHandler = new SoyMsgBundleHandler(new XliffMsgPlugin())
             val bundle = bundleHandler.createFromFile(xlf)
             Some(bundle)
           } else {
             msgBundleAsResource(locale)
           }
-        }
         case _ => msgBundleAsResource(locale)
       }
     } else {
@@ -388,28 +391,36 @@ object ClosureEngine {
    */
   def apply(
     mode: Mode.Mode,
+    soyPaths: List[String],
     version: String,
     rootDir: String,
     modules: Seq[com.google.inject.Module]): ClosureEngine = mode match {
-    case Mode.Dev => apply("app/views/closure", "app/locales", modules)
-    case Mode.Test => apply("test/views/closure", "test/locales", modules)
-    case _ => {
-      val templateDir = new File(rootDir + "/" + version + "/closure")
-      Logger("closureplugin").info("Checking template directory: " + templateDir)
-      if (templateDir.exists) {
-        Logger("closureplugin").info("Using '" + templateDir + "' template directory")
+    case Mode.Dev => soyPaths match {
+      case sp: List[String] if sp.nonEmpty => apply(sp, "app/locales", modules)
+      case _ => apply(List("app/views/closure"), "app/locales", modules)
+    }
+    case Mode.Test => apply(List("test/views/closure"), "test/locales", modules)
+    case _ =>
+      val templateDirs = soyPaths match {
+        case sp: List[String] if sp.nonEmpty =>
+          sp.map(p => new File(rootDir + "/" + version + p + "/closure"))
+        case _ => List(new File(rootDir + "/" + version + "/closure"))
+      }
+      val existingTemplateDirs = templateDirs.filter(_.exists)
+      Logger("closureplugin").info("Checking template directory: " + templateDirs)
+      if (existingTemplateDirs.nonEmpty) {
+        Logger("closureplugin").info("Using '" + existingTemplateDirs + "' template directory")
         val localeDir = new File(rootDir + "/" + version + "/locales")
         if (localeDir.exists) {
           Logger("closureplugin").info("Using '" + localeDir + "' locale directory")
-          apply(templateDir, Some(localeDir), modules = modules)
+          apply(existingTemplateDirs, Some(localeDir), modules = modules)
         } else {
-          apply(templateDir, None, modules = modules)
+          apply(existingTemplateDirs, None, modules = modules)
         }
       } else {
-        Logger("closureplugin").error("Template directory '" + templateDir + "' does not exists. Falling back to jar.")
+        Logger("closureplugin").error("Template directory '" + templateDirs + "' does not exists. Falling back to jar.")
         apply(modules)
       }
-    }
   }
 
   /**
@@ -431,18 +442,21 @@ object ClosureEngine {
   /**
    * Creates a new engine.
    *
-   * @param templateDir Directory of template files.
+   * @param templateDirs Directory of template files.
    */
-  def apply(templateDir: File, localeDir: Option[File], modules: Seq[com.google.inject.Module]): ClosureEngine = new ClosureEngine(
-    List(templateDir).flatMap(recursiveListFiles(_, ".soy")).map(_.toURI.toURL), localeDir, modules = modules)
+  def apply(templateDirs: List[File], localeDir: Option[File], modules: Seq[com.google.inject.Module]): ClosureEngine = new ClosureEngine(
+    templateDirs.flatMap(recursiveListFiles(_, ".soy")).map(_.toURI.toURL), localeDir, modules = modules)
 
   /**
    * Creates a new engine.
    *
-   * @param templateDir Directory of template files.
+   * @param templateDirs Directory of template files.
    */
-  def apply(templateDir: String, localeDir: String, modules: Seq[com.google.inject.Module]): ClosureEngine =
-    apply(new File(templateDir), Some(new File(localeDir)), modules = modules)
+  def apply(templateDirs: List[String], localeDir: String, modules: Seq[com.google.inject.Module]): ClosureEngine =
+    apply(
+      templateDirs.map(td => new File(td)),
+      Some(new File(localeDir)),
+      modules = modules)
 
   def recursiveListFiles(f: File, extension: String = ""): Array[File] = {
     val these = f.listFiles
@@ -466,7 +480,7 @@ object Closure {
   }.getOrElse(throw new RuntimeException("you should have a running app in scope a this point"))
 
   // PUBLIC INTERFACE
-  def reloadEngineCache: Unit = plugin.reloadEngine
+  def reloadEngineCache(): Unit = plugin.reloadEngine()
 
   def setVersion(value: String): Boolean = plugin.setVersion(value)
 
