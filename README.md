@@ -8,6 +8,14 @@ The latest Google Closure Templates jar from google: http://code.google.com/p/cl
 
 Install the latest sbt-closure-templates plugin: https://github.com/gawkermedia/sbt-closure-templates
 
+
+## Installation
+
+1. in ```project/Build.scala``` add ```"com.kinja.play" %% "play2-closure" % "0.38-2.2.1-SNAPSHOT"``` to your ```project/Build.scala``` file's ```app dependencies``` section.
+
+2. in ```project/Build.scala``` add ```resolvers += "pk11" at "http://pk11-scratch.googlecode.com/svn/trunk"``` to your settings
+
+
 ## Local Installation
 
 1. Clone the repository
@@ -19,12 +27,6 @@ Install the latest sbt-closure-templates plugin: https://github.com/gawkermedia/
 libraryDependencies += "com.kinja.play" %% "play2-closure" % "0.38-2.2.1-SNAPSHOT"
 ```
 
-## Install from a repository
-
-1. in ```project/Build.scala``` add ```"com.kinja.play" %% "play2-closure" % "0.38-2.2.1-SNAPSHOT"``` to your ```project/Build.scala``` file's ```app dependencies``` section.
-
-
-2. in ```project/Build.scala``` add ```resolvers += "pk11" at "http://pk11-scratch.googlecode.com/svn/trunk"``` to your settings
 
 ## Usage
 
