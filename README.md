@@ -1,6 +1,6 @@
-# Play! 2.1 plugin for Google Closure Templates
+# Play! 2.2.X plugin for Google Closure Templates
 
-This plugin is designed for using Google Closure Templates with Play! 2.1
+This plugin is designed for using Google Closure Templates with Play! 2.2.X
 
 ## Prerequisites
 
