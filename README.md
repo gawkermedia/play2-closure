@@ -73,7 +73,7 @@ include "build-number.conf"
 closureplugin.assetPath = "/path/to/hotswappable/assets/on/the/production/server"
 ```
 
-The file conf/build-number.conf file should be added by the continuous integration tool (e.g. Jenking) you use before
+The file conf/build-number.conf file should be added by the continuous integration tool (e.g. Jenkins) you use before
 packaging the application to include the current build number of the application.
 
 ```
