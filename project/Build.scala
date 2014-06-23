@@ -8,7 +8,7 @@ import com.typesafe.sbt.SbtScalariform._
 object ApplicationBuild extends Build {
   
   val appName         = "play2-closure"
-  val appVersion      = "0.38-2.2.1" + {if (System.getProperty("JENKINS_BUILD") == null) "-SNAPSHOT" else ""}
+  val appVersion      = "0.39-2.2.1" + {if (System.getProperty("JENKINS_BUILD") == null) "-SNAPSHOT" else ""}
 
   val appDependencies = Seq(
     // Add your project dependencies here,
@@ -18,7 +18,7 @@ object ApplicationBuild extends Build {
     // Add your own project settings here
     libraryDependencies ++= Seq(
       ("com.google.template" % "soy" % "2012-12-21").exclude("asm", "asm"),
-      "com.kinja" %% "soy" % "0.3.0"),
+      "com.kinja" %% "soy" % "0.3.1"),
     resolvers += "Gawker Public Group" at "https://nexus.kinja-ops.com/nexus/content/groups/public/",
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
     scalaVersion := "2.10.2",
