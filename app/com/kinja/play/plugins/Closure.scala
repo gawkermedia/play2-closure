@@ -12,6 +12,7 @@ import com.google.inject.Injector
 
 import com.google.inject.Module
 import com.google.template.soy.SoyFileSet
+import com.google.template.soy.data.SoyData
 import com.google.template.soy.data.SoyListData
 import com.google.template.soy.data.SoyMapData
 import com.google.template.soy.tofu.SoyTofu
@@ -367,10 +368,34 @@ class ClosureEngine(
         case _: IllegalArgumentException => DEFAULT_LOCALE
       }
 
-    renderer(template, locale)
-      .setData(data)
-      .setIjData(inject)
-      .render()
+    val delegate: Option[String] =
+      try {
+        Option(data.getListData(KEY_DELEGATE_NS)) flatMap { ld =>
+          if (ld.length > 0) Some(ld.get(0).toString) else None
+        }
+      } catch {
+        case _: Throwable =>
+          try {
+            Option(data.getString(KEY_DELEGATE_NS))
+          } catch {
+            case _: Throwable => None
+          }
+      }
+
+    delegate match {
+      case Some(sd: String) =>
+        renderer(template, locale)
+          .setActiveDelegatePackageNames(Set(sd.toString))
+          .setData(data)
+          .setIjData(inject)
+          .render()
+      case _ =>
+        renderer(template, locale)
+          .setData(data)
+          .setIjData(inject)
+          .render()
+    }
+
   }
 
 }
