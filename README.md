@@ -105,10 +105,8 @@ on all production servers.
 ### Plugins
 
 This plugin supports Closure Template plugins. Play2-closure takes a list of classpaths in closureplugin.plugins. For
-example, to add the XliffMsgPlugin, you should add this to your conf/application-live.conf:
+example, to add the XliffMsgPlugin, you should add this to your application.conf:
 
 ```
 closureplugin.plugins = ["com.google.template.soy.xliffmsgplugin.XliffMsgPlugin"]
 ```
-
-Incorrect classpaths or classes without a default constructor will be ignored.
