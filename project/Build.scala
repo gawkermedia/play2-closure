@@ -6,9 +6,9 @@ import play.Project._
 import com.typesafe.sbt.SbtScalariform._
 
 object ApplicationBuild extends Build {
-  
+
   val appName         = "play2-closure"
-  val appVersion      = "0.39-2.2.1" + {if (System.getProperty("JENKINS_BUILD") == null) "-SNAPSHOT" else ""}
+  val appVersion      = "0.40-2.2.1" + {if (System.getProperty("JENKINS_BUILD") == null) "-SNAPSHOT" else ""}
 
   val appDependencies = Seq(
     // Add your project dependencies here,
