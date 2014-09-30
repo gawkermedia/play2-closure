@@ -1,6 +1,6 @@
-# Play! 2.2.X plugin for Google Closure Templates
+# Play! 2.3.X plugin for Google Closure Templates
 
-This plugin is designed for using Google Closure Templates with Play! 2.2.X
+This plugin is designed for using Google Closure Templates with Play! 2.3.X
 
 ## Prerequisites
 
@@ -11,7 +11,7 @@ Install the latest sbt-closure-templates plugin: https://github.com/gawkermedia/
 
 ## Installation
 
-1. in ```project/Build.scala``` add ```"com.kinja.play" %% "play2-closure" % "0.38-2.2.1-SNAPSHOT"``` to your ```project/Build.scala``` file's ```app dependencies``` section.
+1. in ```project/Build.scala``` add ```"com.kinja.play" %% "play2-closure" % "0.41-2.3.4-SNAPSHOT"``` to your ```project/Build.scala``` file's ```app dependencies``` section.
 
 2. in ```project/Build.scala``` add ```resolvers += "pk11" at "http://pk11-scratch.googlecode.com/svn/trunk"``` to your settings
 
@@ -24,7 +24,7 @@ Install the latest sbt-closure-templates plugin: https://github.com/gawkermedia/
 4. Add this plugin to your application as a dependency:
 
 ```scala
-libraryDependencies += "com.kinja.play" %% "play2-closure" % "0.38-2.2.1-SNAPSHOT"
+libraryDependencies += "com.kinja.play" %% "play2-closure" % "0.41-2.3.4-SNAPSHOT"
 ```
 
 
