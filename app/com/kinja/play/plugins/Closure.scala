@@ -2,7 +2,7 @@
 package com.kinja.play.plugins
 
 import play.api._
-import play.api.templates._
+import play.twirl.api._
 import play.api.Play.current
 
 import collection.JavaConversions._
