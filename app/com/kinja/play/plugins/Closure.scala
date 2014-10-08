@@ -484,6 +484,7 @@ object ClosureEngine {
       modules = modules)
 
   def recursiveListFiles(f: File, extension: String = ""): Array[File] = {
+    Logger("closureplugin").info(s"Reading template files from ${f.getPath}")
     val these = f.listFiles
     these.filter(_.getName.endsWith(extension)) ++ these.filter(_.isDirectory).flatMap(recursiveListFiles(_, extension))
   }
