@@ -14,10 +14,10 @@ object ApplicationBuild extends Build {
     version := appVersion,
     // Add your own project settings here
     libraryDependencies ++= Seq(
-	  "com.google.inject" % "guice" % "3.0",
-	  "com.google.inject.extensions" % "guice-assistedinject" % "3.0",
-	  "com.google.inject.extensions" % "guice-multibindings" % "3.0",
-	  "com.google.guava" % "guava" % "17.0",
+      "com.google.inject" % "guice" % "3.0",
+      "com.google.inject.extensions" % "guice-assistedinject" % "3.0",
+      "com.google.inject.extensions" % "guice-multibindings" % "3.0",
+      "com.google.guava" % "guava" % "17.0",
       "com.kinja" %% "soy" % "0.3.2"),
     resolvers += "Gawker Public Group" at "https://nexus.kinja-ops.com/nexus/content/groups/public/",
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
