@@ -77,7 +77,7 @@ class ClosurePlugin(app: Application) extends Plugin {
 
   def newEngine: ClosureEngine = assetPath match {
     // read templates from filesystem
-    case Some(rootDir) => ClosureEngine(app.mode, soyPaths, version, rootDir, modules)
+    case Some(rootDir) => ClosureEngine(app.mode, soyPaths, rootDir, modules)
     // read templates from jar
     case _ => ClosureEngine.apply(modules)
   }
@@ -417,7 +417,6 @@ object ClosureEngine {
   def apply(
     mode: Mode.Mode,
     soyPaths: List[String],
-    version: String,
     rootDir: String,
     modules: Seq[com.google.inject.Module]): ClosureEngine = mode match {
     case Mode.Dev => soyPaths match {
@@ -428,14 +427,14 @@ object ClosureEngine {
     case _ =>
       val templateDirs = soyPaths match {
         case sp: List[String] if sp.nonEmpty =>
-          sp.map(p => new File(rootDir + "/" + version + p + "/closure"))
-        case _ => List(new File(rootDir + "/" + version + "/closure"))
+          sp.map(p => new File(rootDir + "/" + p + "/closure"))
+        case _ => List(new File(rootDir + "/closure"))
       }
       val existingTemplateDirs = templateDirs.filter(_.exists)
       Logger("closureplugin").info("Checking template directory: " + templateDirs)
       if (existingTemplateDirs.nonEmpty) {
         Logger("closureplugin").info("Using '" + existingTemplateDirs + "' template directory")
-        val localeDir = new File(rootDir + "/" + version + "/locales")
+        val localeDir = new File(rootDir + "/locales")
         if (localeDir.exists) {
           Logger("closureplugin").info("Using '" + localeDir + "' locale directory")
           apply(existingTemplateDirs, Some(localeDir), modules = modules)
