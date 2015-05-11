@@ -1,6 +1,7 @@
 // vim: sw=2 ts=2 softtabstop=2 expandtab :
 package com.kinja.play.plugins
 
+import com.kinja.soy.Soy
 import org.specs2.mutable._
 
 import play.api.test._
@@ -23,7 +24,7 @@ class ClosurePluginSpec extends Specification with TestApp {
   "Render a Long value" should {
     "equal '42'" in {
       running(app) {
-        Closure.render("closuretest.long", Map("long" -> 42L)) === "42"
+        Closure.render("closuretest.long", Soy.map("long" -> 42L)) === "42"
       }
     }
   }
@@ -31,7 +32,7 @@ class ClosurePluginSpec extends Specification with TestApp {
   "Render Boolean values" should {
     "equal 'true false'" in {
       running(app) {
-        Closure.render("closuretest.bool", Map("true" -> true, "nottrue" -> false)) === "true false"
+        Closure.render("closuretest.bool", Soy.map("true" -> true, "nottrue" -> false)) === "true false"
       }
     }
   }
@@ -41,7 +42,7 @@ class ClosurePluginSpec extends Specification with TestApp {
       running(app) {
         Closure.render(
           "closuretest.list",
-          Map("name" -> Some("Test list"), "list" -> List(1, "2", 3, 4, "5", 6))) === "Test list: 1, 2, 3, 4, 5, 6"
+          Soy.map("name" -> Some("Test list"), "list" -> Soy.list(1, "2", 3, 4, "5", 6))) === "Test list: 1, 2, 3, 4, 5, 6"
       }
     }
   }
@@ -51,27 +52,7 @@ class ClosurePluginSpec extends Specification with TestApp {
       running(app) {
         Closure.render(
           "closuretest.listInList",
-          Map("name" -> Some("Test list"), "list" -> List(List(1, "2", 3, 4L, 5, 6)))) === "Test list: 1, 2, 3, 4, 5, 6"
-      }
-    }
-  }
-
-  "Render a soy list test page" should {
-    "equal 'Test list: 1, 2, 3, 4, 6'" in {
-      running(app) {
-        Closure.render(
-          "closuretest.list",
-          Map("name" -> Some("Test list"), "list" -> new SoyListData(java.util.Arrays.asList(1, 2, 3, 4, 5, 6)))) === "Test list: 1, 2, 3, 4, 5, 6"
-      }
-    }
-  }
-
-  "Render a soy list in list test page" should {
-    "equal 'Test list: 1, 2, 3, 4, 6'" in {
-      running(app) {
-        Closure.render(
-          "closuretest.listInList",
-          Map("name" -> Some("Test list"), "list" -> List(new SoyListData(java.util.Arrays.asList(1, 2, 3, 4, 5, 6))))) === "Test list: 1, 2, 3, 4, 5, 6"
+          Soy.map("name" -> Some("Test list"), "list" -> Soy.list(Soy.list(1, "2", 3, 4L, 5, 6)))) === "Test list: 1, 2, 3, 4, 5, 6"
       }
     }
   }
@@ -81,27 +62,7 @@ class ClosurePluginSpec extends Specification with TestApp {
       running(app) {
         Closure.render(
           "closuretest.listInMap",
-          Map("name" -> Some("Test list"), "map" -> Map("items" -> List(1, "2", 3, 4L, 5, 6)))) === "Test list: 1, 2, 3, 4, 5, 6"
-      }
-    }
-  }
-
-  "Render a soy list in map test page" should {
-    "equal 'Test list: 1, 2, 3, 4, 6'" in {
-      running(app) {
-        Closure.render(
-          "closuretest.listInMap",
-          Map("name" -> Some("Test list"), "map" -> Map("items" -> new SoyListData(java.util.Arrays.asList(1, 2, 3, 4, 5, 6))))) === "Test list: 1, 2, 3, 4, 5, 6"
-      }
-    }
-  }
-
-  "Render a soy list in soy map test page" should {
-    "equal 'Test list: 1, 2, 3, 4, 6'" in {
-      running(app) {
-        Closure.render(
-          "closuretest.listInMap",
-          Map("name" -> Some("Test list"), "map" -> new SoyMapData("items", (new SoyListData(java.util.Arrays.asList(1, 2, 3, 4, 5, 6)))))) === "Test list: 1, 2, 3, 4, 5, 6"
+          Soy.map("name" -> Some("Test list"), "map" -> Soy.map("items" -> Soy.list(1, "2", 3, 4L, 5, 6)))) === "Test list: 1, 2, 3, 4, 5, 6"
       }
     }
   }
@@ -122,12 +83,12 @@ class ClosurePluginSpec extends Specification with TestApp {
   "Render an Option value" should {
     "equal 'None'" in {
       running(app) {
-        Closure.render("closuretest.option", Map("value" -> None)) === "None"
+        Closure.render("closuretest.option", Soy.map("value" -> Option.empty[String])) === "None"
       }
     }
     "equal 'Some'" in {
       running(app) {
-        Closure.render("closuretest.option", Map("value" -> Some("Some value"))) === "Some value"
+        Closure.render("closuretest.option", Soy.map("value" -> Some("Some value"))) === "Some value"
       }
     }
   }
@@ -136,8 +97,8 @@ class ClosurePluginSpec extends Specification with TestApp {
     "work" in {
       running(app) {
         Closure.render("closuretest.locale") === "Submit"
-        Closure.render("closuretest.locale", Map("locale" -> "hu_HU")) === "Hu Submit"
-        Closure.render("closuretest.locale", Map("locale" -> "es_ES")) === "es Submit"
+        Closure.render("closuretest.locale", Soy.map("locale" -> "hu_HU")) === "Hu Submit"
+        Closure.render("closuretest.locale", Soy.map("locale" -> "es_ES")) === "es Submit"
       }
     }
   }
@@ -145,7 +106,7 @@ class ClosurePluginSpec extends Specification with TestApp {
   "Inject" should {
     "work" in {
       running(app) {
-        Closure.render("closuretest.inject", Map[String, Any](), Map("foo" -> "bar")) === "bar"
+        Closure.render("closuretest.inject", Soy.map(), Soy.map("foo" -> "bar")) === "bar"
       }
     }
   }
@@ -153,7 +114,7 @@ class ClosurePluginSpec extends Specification with TestApp {
   "Empty delegate" should {
     "work" in {
       running(app) {
-        Closure.render("closuretest.option", Map("delegate" -> Set(), "value" -> Some("Some value"))) === "Some value"
+        Closure.render("closuretest.option", Soy.map("delegate" -> Soy.map(), "value" -> Some("Some value"))) === "Some value"
       }
     }
   }
