@@ -509,11 +509,8 @@ object Closure {
 
   def setVersion(value: String): Boolean = plugin.setVersion(value)
 
-  def render(template: String, data: Map[String, Any] = Map()): String =
-    plugin.api.render(template, data, Map[String, Any]())
-
-  def render(template: String, data: Map[String, Any], inject: Map[String, Any]): String =
-    plugin.api.render(template, data, inject)
+  def render(template: String): String =
+    plugin.api.render(template, new SoyMapData(), new SoyMapData())
 
   def render(template: String, data: SoyMapData): String =
     plugin.api.render(template, data, new SoyMapData())
@@ -528,10 +525,10 @@ object Closure {
     plugin.api.render(template, data.build, inject.build)
 
   def html(template: String, data: Map[String, Any] = Map()): Html =
-    Html(render(template, data, Map[String, Any]()))
+    Html(plugin.api.render(template, data, Map[String, Any]()))
 
   def html(template: String, data: Map[String, Any], inject: Map[String, Any]): Html =
-    Html(render(template, data, inject))
+    Html(plugin.api.render(template, data, inject))
 
   def html(template: String, data: SoyMapData): Html =
     Html(render(template, data, new SoyMapData))
