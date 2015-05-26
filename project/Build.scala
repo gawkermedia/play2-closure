@@ -18,7 +18,7 @@ object ApplicationBuild extends Build {
       "com.kinja" %% "soy" % "1.0.1"),
     resolvers += "Gawker Public Group" at "https://nexus.kinja-ops.com/nexus/content/groups/public/",
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
-    scalaVersion := "2.10.4",
+    crossScalaVersions := Seq("2.10.4", "2.11.6"),
     organization := "com.kinja.play",
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
     javacOptions ++= Seq("-Xlint:deprecation"),
