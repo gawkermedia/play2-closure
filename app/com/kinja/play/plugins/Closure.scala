@@ -24,7 +24,7 @@ import java.io.File
 import java.net.URL
 import java.lang.Class
 
-import com.kinja.soy.{ SoyNull, SoyString, SoyBoolean, SoyInt, SoyFloat, SoyDouble, SoyList, SoyMap }
+import com.kinja.soy.{ SoyNull, SoyString, SoyBoolean, SoyInt, SoyFloat, SoyList, SoyMap }
 
 class InvalidClosureValueException(obj: Any, path: Option[String] = None) extends Exception {
 
@@ -176,8 +176,7 @@ class ClosureEngine(
       case s: SoyString => Option(s.build) map (v => sl.add(v)) // prevent NullPointerException
       case s: SoyBoolean => sl.add(s.build)
       case s: SoyInt => sl.add(s.build)
-      case s: SoyFloat => sl.add(s.build)
-      case s: SoyDouble => sl.add(s.build)
+      case s: SoyFloat => sl.add(s.build: Double)
       case SoyNull => // do nothing
       case mm: Map[String, Any] => sl.add(mapToSoyData(mm, path))
       case l: Seq[Any] => sl.add(seqToSoyData(l, path))
@@ -215,8 +214,7 @@ class ClosureEngine(
       case s: SoyString => Option(s.build) map (v => sm.put(k, v)) // prevent NullPointerException
       case s: SoyBoolean => sm.put(k, s.build)
       case s: SoyInt => sm.put(k, s.build)
-      case s: SoyFloat => sm.put(k, s.build)
-      case s: SoyDouble => sm.put(k, s.build)
+      case s: SoyFloat => sm.put(k, (s.build: Double))
       case SoyNull => // do nothing
       case mm: Map[String, Any] => sm.put(k, mapToSoyData(mm, path))
       case l: Seq[Any] => sm.put(k, seqToSoyData(l, path))
