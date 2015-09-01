@@ -62,40 +62,22 @@ class SoyRenderSpec extends Specification with TestApp {
         rendered must_== "Value is: -98983423"
       }
     }
-    "render SoyFloat(+float)" in {
+    "render SoyFloat(+double)" in {
       running(app) {
-        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyFloat(8329.5f)))
+        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyFloat(8329.5)))
         rendered must_== "Value is: 8329.5"
       }
     }
     "render SoyFloat(0)" in {
       running(app) {
-        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyFloat(0.0f)))
-        rendered must_== "Value is: 0.0"
+        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyFloat(0.0)))
+        rendered must_== "Value is: 0"
       }
     }
-    "render SoyFloat(-float)" in {
+    "render SoyFloat(-double)" in {
       running(app) {
-        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyFloat(-9409.5f)))
+        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyFloat(-9409.5)))
         rendered must_== "Value is: -9409.5"
-      }
-    }
-    "render SoyDouble(+double)" in {
-      running(app) {
-        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyDouble(983.279)))
-        rendered must_== "Value is: 983.279"
-      }
-    }
-    "render SoyDouble(0)" in {
-      running(app) {
-        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyDouble(0.0)))
-        rendered must_== "Value is: 0.0"
-      }
-    }
-    "render SoyDouble(-double)" in {
-      running(app) {
-        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyDouble(-167.5982)))
-        rendered must_== "Value is: -167.5982"
       }
     }
     "render SoyList()" in {
@@ -118,8 +100,8 @@ class SoyRenderSpec extends Specification with TestApp {
     }
     "render SoyList(string, int, float, double, null)" in {
       running(app) {
-        val rendered = Closure.render("soyrender.valueList", Soy.map("list" -> SoyList(Seq(SoyString("a"), SoyInt(1), SoyFloat(2.0f), SoyDouble(3.0), SoyNull))))
-        rendered must_== "List is: a, 1, 2.0, 3.0, UNDEFINED"
+        val rendered = Closure.render("soyrender.valueList", Soy.map("list" -> SoyList(Seq(SoyString("a"), SoyInt(1), SoyFloat(2.1), SoyFloat(3.1), SoyNull))))
+        rendered must_== "List is: a, 1, 2.1, 3.1, UNDEFINED"
       }
     }
     "render SoyList()" in {
@@ -142,8 +124,8 @@ class SoyRenderSpec extends Specification with TestApp {
     }
     "render Soy.list(string, int, float, double, null)" in {
       running(app) {
-        val rendered = Closure.render("soyrender.valueList", Soy.map("list" -> Soy.list("a", 1, 2.0f, 3.0, SoyNull)))
-        rendered must_== "List is: a, 1, 2.0, 3.0, UNDEFINED"
+        val rendered = Closure.render("soyrender.valueList", Soy.map("list" -> Soy.list("a", 1, 2.5, 3.5, SoyNull)))
+        rendered must_== "List is: a, 1, 2.5, 3.5, UNDEFINED"
       }
     }
   }
@@ -197,40 +179,22 @@ class SoyRenderSpec extends Specification with TestApp {
         rendered must_== "Value is: -98983423"
       }
     }
-    "render SoyFloat(+float)" in {
+    "render SoyFloat(+double)" in {
       running(app) {
-        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyFloat(8329.5f)).build)
+        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyFloat(8329.5)).build)
         rendered must_== "Value is: 8329.5"
       }
     }
     "render SoyFloat(0)" in {
       running(app) {
-        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyFloat(0.0f)).build)
-        rendered must_== "Value is: 0.0"
+        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyFloat(0.0)).build)
+        rendered must_== "Value is: 0"
       }
     }
-    "render SoyFloat(-float)" in {
+    "render SoyFloat(-double)" in {
       running(app) {
-        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyFloat(-9409.5f)).build)
+        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyFloat(-9409.5)).build)
         rendered must_== "Value is: -9409.5"
-      }
-    }
-    "render SoyDouble(+double)" in {
-      running(app) {
-        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyDouble(983.279)).build)
-        rendered must_== "Value is: 983.279"
-      }
-    }
-    "render SoyDouble(0)" in {
-      running(app) {
-        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyDouble(0.0)).build)
-        rendered must_== "Value is: 0.0"
-      }
-    }
-    "render SoyDouble(-double)" in {
-      running(app) {
-        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyDouble(-167.5982)).build)
-        rendered must_== "Value is: -167.5982"
       }
     }
     "render SoyList()" in {
@@ -253,8 +217,8 @@ class SoyRenderSpec extends Specification with TestApp {
     }
     "render SoyList(string, int, float, double, null)" in {
       running(app) {
-        val rendered = Closure.render("soyrender.valueList", Soy.map("list" -> SoyList(Seq(SoyString("a"), SoyInt(1), SoyFloat(2.0f), SoyDouble(3.0), SoyNull))).build)
-        rendered must_== "List is: a, 1, 2.0, 3.0, UNDEFINED"
+        val rendered = Closure.render("soyrender.valueList", Soy.map("list" -> SoyList(Seq(SoyString("a"), SoyInt(1), SoyFloat(2.4), SoyFloat(3.4), SoyNull))).build)
+        rendered must_== "List is: a, 1, 2.4, 3.4, UNDEFINED"
       }
     }
     "render SoyList()" in {
@@ -277,8 +241,8 @@ class SoyRenderSpec extends Specification with TestApp {
     }
     "render Soy.list(string, int, float, double, null)" in {
       running(app) {
-        val rendered = Closure.render("soyrender.valueList", Soy.map("list" -> Soy.list("a", 1, 2.0f, 3.0, SoyNull)).build)
-        rendered must_== "List is: a, 1, 2.0, 3.0, UNDEFINED"
+        val rendered = Closure.render("soyrender.valueList", Soy.map("list" -> Soy.list("a", 1, 2.6, 3.6, SoyNull)).build)
+        rendered must_== "List is: a, 1, 2.6, 3.6, UNDEFINED"
       }
     }
   }
@@ -332,40 +296,22 @@ class SoyRenderSpec extends Specification with TestApp {
         rendered must_== "Value is: -98983423"
       }
     }
-    "render SoyFloat(+float)" in {
+    "render SoyFloat(+double)" in {
       running(app) {
-        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyFloat(8329.5f)))
+        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyFloat(8329.5)))
         rendered must_== "Value is: 8329.5"
       }
     }
     "render SoyFloat(0)" in {
       running(app) {
-        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyFloat(0.0f)))
-        rendered must_== "Value is: 0.0"
+        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyFloat(0.0)))
+        rendered must_== "Value is: 0"
       }
     }
-    "render SoyFloat(-float)" in {
+    "render SoyFloat(-double)" in {
       running(app) {
-        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyFloat(-9409.5f)))
+        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyFloat(-9409.5)))
         rendered must_== "Value is: -9409.5"
-      }
-    }
-    "render SoyDouble(+double)" in {
-      running(app) {
-        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyDouble(983.279)))
-        rendered must_== "Value is: 983.279"
-      }
-    }
-    "render SoyDouble(0)" in {
-      running(app) {
-        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyDouble(0.0)))
-        rendered must_== "Value is: 0.0"
-      }
-    }
-    "render SoyDouble(-double)" in {
-      running(app) {
-        val rendered = Closure.render("soyrender.valueNumber", Soy.map("value" -> SoyDouble(-167.5982)))
-        rendered must_== "Value is: -167.5982"
       }
     }
     "render SoyList()" in {
@@ -388,8 +334,8 @@ class SoyRenderSpec extends Specification with TestApp {
     }
     "render SoyList(string, int, float, double, null)" in {
       running(app) {
-        val rendered = Closure.render("soyrender.valueList", Soy.map("list" -> SoyList(Seq(SoyString("a"), SoyInt(1), SoyFloat(2.0f), SoyDouble(3.0), SoyNull))))
-        rendered must_== "List is: a, 1, 2.0, 3.0, UNDEFINED"
+        val rendered = Closure.render("soyrender.valueList", Soy.map("list" -> SoyList(Seq(SoyString("a"), SoyInt(1), SoyFloat(2.2), SoyFloat(3.2), SoyNull))))
+        rendered must_== "List is: a, 1, 2.2, 3.2, UNDEFINED"
       }
     }
     "render SoyList()" in {
@@ -412,8 +358,8 @@ class SoyRenderSpec extends Specification with TestApp {
     }
     "render Soy.list(string, int, float, double, null)" in {
       running(app) {
-        val rendered = Closure.render("soyrender.valueList", Soy.map("list" -> Soy.list("a", 1, 2.0f, 3.0, SoyNull)))
-        rendered must_== "List is: a, 1, 2.0, 3.0, UNDEFINED"
+        val rendered = Closure.render("soyrender.valueList", Soy.map("list" -> Soy.list("a", 1, 2.8, 3.8, SoyNull)))
+        rendered must_== "List is: a, 1, 2.8, 3.8, UNDEFINED"
       }
     }
   }
