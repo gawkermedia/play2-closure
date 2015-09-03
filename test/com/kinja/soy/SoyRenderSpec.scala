@@ -80,6 +80,30 @@ class SoyRenderSpec extends Specification with TestApp {
         rendered must_== "Value is: -9409.5"
       }
     }
+    "escape SoyString in HTML contexts" in {
+      running(app) {
+        val rendered = Closure.render("soyrender.valueString", Soy.map("value" -> SoyString("<h1><b>foo</b></h1>")))
+        rendered must_== "Value is: &lt;h1&gt;&lt;b&gt;foo&lt;/b&gt;&lt;/h1&gt;"
+      }
+    }
+    "not escape SoyHtml in HTML contexts" in {
+      running(app) {
+        val rendered = Closure.render("soyrender.valueHtml", Soy.map("value" -> SoyHtml("<h1><b>foo</b></h1>")))
+        rendered must_== "Value is: <h1><b>foo</b></h1>"
+      }
+    }
+    "escape SoyString in URI contexts" in {
+      running(app) {
+        val rendered = Closure.render("soyrender.valueUriString", Soy.map("value" -> SoyString("ben&jerry")))
+        rendered must_== """<a href="http://foo.com?bar=ben%26jerry&baz=b"></a>"""
+      }
+    }
+    "not escape SoyUri in URI contexts" in {
+      running(app) {
+        val rendered = Closure.render("soyrender.valueUri", Soy.map("value" -> SoyUri("bar=&baz=b")))
+        rendered must_== """<a href="http://foo.com?bar=&baz=b"></a>"""
+      }
+    }
     "render SoyList()" in {
       running(app) {
         val rendered = Closure.render("soyrender.valueList", Soy.map("list" -> SoyList(Seq())))

@@ -12,9 +12,7 @@ import com.google.inject.Injector
 
 import com.google.inject.Module
 import com.google.template.soy.SoyFileSet
-import com.google.template.soy.data.SoyData
-import com.google.template.soy.data.SoyListData
-import com.google.template.soy.data.SoyMapData
+import com.google.template.soy.data.{ SoyData, SoyListData, SoyMapData, SanitizedContent }
 import com.google.template.soy.tofu.SoyTofu
 import com.google.template.soy.msgs.SoyMsgBundle
 import com.google.template.soy.msgs.SoyMsgBundleHandler
@@ -24,7 +22,7 @@ import java.io.File
 import java.net.URL
 import java.lang.Class
 
-import com.kinja.soy.{ SoyNull, SoyString, SoyBoolean, SoyInt, SoyFloat, SoyList, SoyMap }
+import com.kinja.soy._
 
 class InvalidClosureValueException(obj: Any, path: Option[String] = None) extends Exception {
 
@@ -177,6 +175,10 @@ class ClosureEngine(
       case s: SoyBoolean => sl.add(s.build)
       case s: SoyInt => sl.add(s.build)
       case s: SoyFloat => sl.add(s.build: Double)
+      case s: SoyHtml => sl.add(s.build)
+      case s: SoyUri => sl.add(s.build)
+      case s: SoyCss => sl.add(s.build)
+      case s: SoyJs => sl.add(s.build)
       case SoyNull => // do nothing
       case mm: Map[String, Any] => sl.add(mapToSoyData(mm, path))
       case l: Seq[Any] => sl.add(seqToSoyData(l, path))
@@ -189,6 +191,7 @@ class ClosureEngine(
       case s: Set[_] => sl.add(seqToSoyData(s.toSeq, path))
       case m: SoyMapData => sl.add(m)
       case l: SoyListData => sl.add(l)
+      case s: SanitizedContent => sl.add(s)
       case None => // do nothing
       case null => // do nothing
       case _ => throw new InvalidClosureValueException(a, Some(path.tail))
@@ -215,6 +218,10 @@ class ClosureEngine(
       case s: SoyBoolean => sm.put(k, s.build)
       case s: SoyInt => sm.put(k, s.build)
       case s: SoyFloat => sm.put(k, (s.build: Double))
+      case s: SoyHtml => sm.put(k, s.build)
+      case s: SoyUri => sm.put(k, s.build)
+      case s: SoyCss => sm.put(k, s.build)
+      case s: SoyJs => sm.put(k, s.build)
       case SoyNull => // do nothing
       case mm: Map[String, Any] => sm.put(k, mapToSoyData(mm, path))
       case l: Seq[Any] => sm.put(k, seqToSoyData(l, path))
@@ -227,6 +234,7 @@ class ClosureEngine(
       case s: Set[_] => sm.put(k, seqToSoyData(s.toSeq, path))
       case m: SoyMapData => sm.put(k, m)
       case l: SoyListData => sm.put(k, l)
+      case s: SanitizedContent => sm.put(k, s)
       case None => // do nothing
       case null => // do nothing
       case _ => throw new InvalidClosureValueException(a, Some(path.tail))
