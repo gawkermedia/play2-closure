@@ -2,17 +2,19 @@
 
 /**
  * Tests rendering SoyBoolean
- * @param value Test value
  */
 {template .valueBoolean}
+{@param value: bool}
+
 Value is: {if $value}TRUE{else}FALSE{/if}
 {/template}
 
 /**
  * Tests rendering SoyList
- * @param list Test list
  */
 {template .valueList}
+{@param list: list<any>}
+
 List is: {foreach $item in $list}
   {if not isFirst($item)},{sp}{/if}
   {call .valueListItem}
@@ -25,32 +27,63 @@ List is: {foreach $item in $list}
 
 /**
  * List item for testing SoyList
- * @param item List item
  */
 {template .valueListItem}
+{@param item: any}
+
 {if $item}{$item}{else}UNDEFINED{/if}
 {/template}
 
 /**
  * Tests rendering SoyNull
- * @param value Test value
  */
 {template .valueNull}
+{@param value: any}
+
 Value is: {if $value}NOT NULL{else}NULL{/if}
 {/template}
 
 /**
  * Tests rendering SoyNumber
- * @param value Test value
  */
 {template .valueNumber}
+{@param value: number}
+
 Value is: {$value}
 {/template}
 
 /**
  * Tests rendering SoyString
- * @param value Test value
  */
 {template .valueString}
+{@param? value: string}
+
 Value is: {if $value}{$value}{else}UNDEFINED{/if}
+{/template}
+
+/**
+ * Tests rendering SoyHtml
+ */
+{template .valueHtml}
+{@param value: html}
+
+Value is: {$value}
+{/template}
+
+/**
+ * Tests rendering SoyString in URI contexts
+ */
+{template .valueUriString}
+{@param value: string}
+
+<a href="http://foo.com?bar={$value}&baz=b"></a>
+{/template}
+
+/**
+ * Tests rendering SoyUri
+ */
+{template .valueUri}
+{@param value: uri}
+
+<a href="http://foo.com?{$value}"></a>
 {/template}
