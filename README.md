@@ -1,31 +1,29 @@
-# Play! 2.3.X plugin for Google Closure Templates
+# Play! 2.3.x plugin for Google Closure Templates
 
-This plugin is designed for using Google Closure Templates with Play! 2.3.X
-
-## Prerequisites
-
-The latest Google Closure Templates jar from google: http://code.google.com/p/closure-templates/
-
-Install the latest sbt-closure-templates plugin: https://github.com/gawkermedia/sbt-closure-templates
-
+This plugin is designed for using Google Closure Templates with Play! 2.3.x
 
 ## Installation
 
-1. in ```project/Build.scala``` add ```"com.kinja.play" %% "play2-closure" % "0.41-2.3.4-SNAPSHOT"``` to your ```project/Build.scala``` file's ```app dependencies``` section.
-
-2. in ```project/Build.scala``` add ```resolvers += "pk11" at "http://pk11-scratch.googlecode.com/svn/trunk"``` to your settings
-
-
-## Local Installation
-
 1. Clone the repository
-2. Go into play2-closure directory
-3. Execute `sbt publish-local`
-4. Add this plugin to your application as a dependency:
 
-```scala
-libraryDependencies += "com.kinja.play" %% "play2-closure" % "0.41-2.3.4-SNAPSHOT"
-```
+2. Go into play2-closure directory and execute `sbt publishLocal`
+
+3. Add the plugin to your application as a dependency:
+    ```scala
+    libraryDependencies += "com.kinja.play" %% "play2-closure" % "0.56-2.3.9-SNAPSHOT"
+    ```
+
+4. Enable the plugin in `conf/play.plugins`:
+    ```
+    1600:com.kinja.play.plugins.ClosurePlugin
+    ```
+
+5. Configure the build number in `conf/application.conf`:
+    ```
+    buildNumber="1"
+    ```
+
+6. Create at least one soy template file in `app/views/closure`.
 
 
 ## Usage
@@ -41,16 +39,31 @@ Rendering a template is as simple as calling `Closure.render` with the template 
 import com.kinja.play.plugins.Closure
 import com.kinja.soy._
 
-val rendered: String = Closure.html("com.example.index.soy", Soy.map("hello" -> "world"))
+val rendered: String = Closure.render("com.example.index.soy", Soy.map("hello" -> "world"))
 ```
 
 The template files should be placed in `app/views/closure` in dev mode and `test/views/closure` for tests.
+
+### Packaging the template files with the application
+
+Template files are not automatically packaged into the output JAR, you need to map them manually.
+You can achieve this with the `mappings` SBT setting:
+
+```scala
+mappings in (Compile, packageBin) ++= {
+  val app = baseDirectory.value / "app"
+  ((app / "views" / "closure") ** "*.soy").get pair rebase(app, "app")
+}
+```
+
+For alternative ways to provide the plugin with the template files (for example when deploying the
+templates separately from app), see the [Templates in production](#templates_in_production) section below.
 
 ### Setting the locale
 
 ```scala
 Closure.html("com.example.index", Soy.map(
-  Closure.KEY_LOCALE -> "hu_HU", // ISO language code: four letter with underscore
+  "locale" -> "hu_HU", // ISO language code: four letter with underscore
   "hello" -> "world"))
 ```
 
@@ -60,8 +73,8 @@ The dictionary file pattern is `app/locales/{$locale}.xlf`
 
 Normally, templates are loaded from the packaged application. However, the plugin allows hot swapping the templates
 without restarting the Play application. This is useful to do quick template-only deploys. For this, in production
-mode templates are attempted t obe loaded from the following directory: `{assetPath}/{version}/closure`. If this
-directory does not exists, templates are loaded from the application package. `assetPath` and `version` can be set in
+mode templates are attempted to be loaded from the following directory: `{assetPath}/{buildNumber}/closure`. If this
+directory does not exists, templates are loaded from the application package. `assetPath` and `buildNumber` can be set in
 Play configuration as keys `closureplugin.assetPath` and `buildNumber` respectively.
 
 The recommended setup for hot-swapping is as follows:
@@ -73,7 +86,7 @@ include "build-number.conf"
 closureplugin.assetPath = "/path/to/hotswappable/assets/on/the/production/server"
 ```
 
-The file conf/build-number.conf file should be added by the continuous integration tool (e.g. Jenkins) you use before
+The file `conf/build-number.conf` file should be added by the continuous integration tool (e.g. Jenkins) you use before
 packaging the application to include the current build number of the application.
 
 ```
@@ -99,12 +112,12 @@ object HotSwapController extends Controller {
 ```
 
 The hot-swapping can now be implemented as a separate build job, which copies the templates to your productions servers
-in the appropriate directory under a new build number, and then call the hotswap API call to set the new build number
+in the appropriate directory under a new build number and then calls the hotswap API call to set the new build number
 on all production servers.
 
 ### Plugins
 
-This plugin supports Closure Template plugins. Play2-closure takes a list of classpaths in closureplugin.plugins. For
+This plugin supports Closure Template plugins. Play2-closure takes a list of classpaths in `closureplugin.plugins`. For
 example, to add the XliffMsgPlugin, you should add this to your application.conf:
 
 ```
