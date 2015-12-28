@@ -57,7 +57,7 @@ mappings in (Compile, packageBin) ++= {
 ```
 
 For alternative ways to provide the plugin with the template files (for example when deploying the
-templates separately from app), see the [Templates in production](#templates_in_production) section below.
+templates separately from app), see the [Templates in production](#templates-in-production) section below.
 
 ### Setting the locale
 
