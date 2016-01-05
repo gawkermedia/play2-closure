@@ -5,7 +5,9 @@ import play.api._
 import play.twirl.api._
 import play.api.Play.current
 
+import collection.mutable.ListBuffer
 import collection.JavaConversions._
+import util.control.NonFatal
 
 import com.google.inject.Guice
 import com.google.inject.Injector
@@ -20,7 +22,8 @@ import com.google.template.soy.xliffmsgplugin.XliffMsgPlugin
 
 import java.io.File
 import java.net.URL
-import java.lang.Class
+import java.nio.file.Paths
+import java.util.jar.JarFile
 
 import com.kinja.soy._
 
@@ -77,7 +80,7 @@ class ClosurePlugin(app: Application) extends Plugin {
     // read templates from filesystem
     case Some(rootDir) => ClosureEngine(app.mode, soyPaths, rootDir, modules)
     // read templates from jar
-    case _ => ClosureEngine.apply(modules)
+    case _ => ClosureEngine.apply(soyPaths, modules)
   }
 
   def reloadEngine(): Unit = {
@@ -408,8 +411,6 @@ class ClosureEngine(
 
 object ClosureEngine {
 
-  val resourceFile = "/closure_templates.txt"
-
   /**
    * Creates a new engine by mode.
    *
@@ -449,7 +450,7 @@ object ClosureEngine {
         }
       } else {
         Logger("closureplugin").error("Template directory '" + templateDirs + "' does not exists. Falling back to jar.")
-        apply(modules)
+        apply(soyPaths, modules)
       }
   }
 
@@ -457,16 +458,43 @@ object ClosureEngine {
    * Templates are in the jar as resource
    *
    */
-  def apply(modules: Seq[com.google.inject.Module]): ClosureEngine = {
-    val res = getClass.getResourceAsStream(resourceFile)
-    if (res == null) {
-      throw new Exception("Resource file not foud: " + resourceFile)
-    } else {
-      new ClosureEngine(
-        scala.io.Source.fromInputStream(res, "UTF-8").getLines().map(line => {
-          getClass.getResource(line)
-        }).toList, modules = modules)
+  def apply(
+    soyPaths: List[String],
+    modules: Seq[com.google.inject.Module]): ClosureEngine = {
+    val buffer = new ListBuffer[URL]()
+
+    // get soy files from current working directory
+    val dirs = if (soyPaths.nonEmpty) soyPaths else List(".")
+    buffer ++= dirs.flatMap(dir => recursiveListFiles(Paths.get(dir).toFile, ".soy")).map(_.toURI.toURL)
+
+    // get soy files from the classpath
+    val classPath = System.getProperty("java.class.path", ".")
+    val classPathElements = classPath.split(System.getProperty("path.separator"))
+    classPathElements foreach { element =>
+      try {
+        val file = new File(element)
+        if (file.isDirectory) {
+          buffer ++= recursiveListFiles(file, ".soy").map(_.toURI.toURL)
+        } else {
+          val jar = new JarFile(file)
+          val entries = jar.entries
+          while (entries.hasMoreElements) {
+            val name = entries.nextElement.getName
+            if (name.endsWith(".soy")) {
+              buffer += new URL("jar:file://" + file.getAbsolutePath + "!/" + name)
+            }
+          }
+        }
+      } catch {
+        case NonFatal(_) =>
+      }
     }
+
+    if (buffer.isEmpty) {
+      throw new Exception("No template files found on either the classpath or \n" + dirs.map(new File(_).getAbsolutePath).mkString(" or "))
+    }
+
+    new ClosureEngine(buffer.toList, modules = modules)
   }
 
   /**
@@ -490,7 +518,7 @@ object ClosureEngine {
 
   def recursiveListFiles(f: File, extension: String = ""): Array[File] = {
     Logger("closureplugin").info(s"Reading template files from ${f.getPath}")
-    val these = f.listFiles
+    val these = Option(f.listFiles).getOrElse(Array.empty)
     these.filter(_.getName.endsWith(extension)) ++ these.filter(_.isDirectory).flatMap(recursiveListFiles(_, extension))
   }
 

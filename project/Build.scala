@@ -8,7 +8,7 @@ import com.typesafe.sbt.SbtScalariform._
 object ApplicationBuild extends Build {
 
   val appName         = "play2-closure"
-  val appVersion      = "0.55-2.3.9" + {if (System.getProperty("JENKINS_BUILD") == null) "-SNAPSHOT" else ""}
+  val appVersion      = "0.56-2.3.9" + {if (System.getProperty("JENKINS_BUILD") == null) "-SNAPSHOT" else ""}
 
   val localSettings = scalariformSettings ++ Seq(
     version := appVersion,
