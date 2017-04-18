@@ -1,6 +1,6 @@
-# Play! 2.3.x plugin for Google Closure Templates
+# Play! 2.4.x plugin for Google Closure Templates
 
-This plugin is designed for using Google Closure Templates with Play! 2.3.x
+This plugin is designed for using Google Closure Templates with Play! 2.4.x
 
 ## Installation
 
@@ -10,7 +10,7 @@ This plugin is designed for using Google Closure Templates with Play! 2.3.x
 
 3. Add the plugin to your application as a dependency:
     ```scala
-    libraryDependencies += "com.kinja.play" %% "play2-closure" % "0.56-2.3.9-SNAPSHOT"
+    libraryDependencies += "com.kinja.play" %% "play2-closure" % "1.0-2.4.11-SNAPSHOT"
     ```
 
 4. Enable the plugin in `conf/play.plugins`:
