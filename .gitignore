@@ -11,3 +11,4 @@ local.sbt
 /.project
 /.settings/
 /.target/
+/.idea/

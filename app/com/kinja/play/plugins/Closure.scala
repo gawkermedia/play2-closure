@@ -1,6 +1,7 @@
 // vim: sw=2 ts=2 softtabstop=2 expandtab :
 package com.kinja.play.plugins
 
+import com.google.common.base.Predicates
 import play.api._
 import play.twirl.api._
 import play.api.Play.current
@@ -8,24 +9,21 @@ import play.api.Play.current
 import collection.mutable.ListBuffer
 import collection.JavaConversions._
 import util.control.NonFatal
-
 import com.google.inject.Guice
 import com.google.inject.Injector
-
 import com.google.inject.Module
 import com.google.template.soy.SoyFileSet
-import com.google.template.soy.data.{ SoyData, SoyListData, SoyMapData, SanitizedContent }
+import com.google.template.soy.data.{ SanitizedContent, SoyData, SoyListData, SoyMapData }
 import com.google.template.soy.tofu.SoyTofu
 import com.google.template.soy.msgs.SoyMsgBundle
 import com.google.template.soy.msgs.SoyMsgBundleHandler
 import com.google.template.soy.xliffmsgplugin.XliffMsgPlugin
-
 import java.io.File
 import java.net.URL
 import java.nio.file.Paths
 import java.util.jar.JarFile
-
 import com.kinja.soy._
+import javax.inject.Inject
 
 class InvalidClosureValueException(obj: Any, path: Option[String] = None) extends Exception {
 
@@ -34,7 +32,7 @@ class InvalidClosureValueException(obj: Any, path: Option[String] = None) extend
   private val clazz: String = obj.getClass.getName
 
   private val objAsString: String = obj.toString match {
-    case s if s.size > maxMessageLength => s.take(maxMessageLength) + "..."
+    case s if s.length > maxMessageLength => s.take(maxMessageLength) + "..."
     case s => s
   }
 
@@ -45,7 +43,7 @@ class InvalidClosureValueException(obj: Any, path: Option[String] = None) extend
 /**
  * Play plugin for Closure.
  */
-class ClosurePlugin(app: Application) extends Plugin {
+class ClosurePlugin @Inject() (implicit app: Application) extends Plugin {
 
   private lazy val assetPath: Option[String] = app.configuration.getString("closureplugin.assetPath")
   private lazy val soyPaths: List[String] =
@@ -115,7 +113,7 @@ class ClosurePlugin(app: Application) extends Plugin {
     if (enabled) {
       log.info("start on mode: " + app.mode)
 
-      version = Play.application.configuration.getString("buildNumber").getOrElse(
+      version = app.configuration.getString("buildNumber").getOrElse(
         throw new Exception("buildNumber config is missing"))
       // This prevent the new engine creatation on startup in dev mode.
       //if (app.mode == Mode.Prod) {
@@ -126,10 +124,7 @@ class ClosurePlugin(app: Application) extends Plugin {
     }
   }
 
-  override lazy val enabled = {
-    !app.configuration.getString("closureplugin.status").filter(
-      _ == "disabled").isDefined
-  }
+  override lazy val enabled: Boolean = !app.configuration.getString("closureplugin.status").contains("disabled")
 }
 
 /**
@@ -158,7 +153,7 @@ class ClosureEngine(
         case s: String if s.isEmpty => "(empty string)"
         case _ =>
           a.toString match {
-            case s if s.size > 100 => s.take(100) + "... (" + s.size + " bytes)"
+            case s if s.length > 100 => s.take(100) + "... (" + s.length + " bytes)"
             case s => s
           }
       }
@@ -174,7 +169,7 @@ class ClosureEngine(
     a match {
       case s: SoyMap => sl.add(s.build)
       case s: SoyList => sl.add(s.build)
-      case s: SoyString => Option(s.build) map (v => sl.add(v)) // prevent NullPointerException
+      case s: SoyString => Option(s.build) foreach (v => sl.add(v)) // prevent NullPointerException
       case s: SoyBoolean => sl.add(s.build)
       case s: SoyInt => sl.add(s.build)
       case s: SoyFloat => sl.add(s.build: Double)
@@ -203,11 +198,9 @@ class ClosureEngine(
 
   private def seqToSoyData(l: Seq[Any], path: => String): SoyListData = {
     val sl = new SoyListData()
-    l.foreach { v =>
-      v match {
-        case Some(a: Any) => addSoyValue(sl, a, path + "[]")
-        case _ => addSoyValue(sl, v, path + "[]")
-      }
+    l.foreach {
+      case Some(a: Any) => addSoyValue(sl, a, path + "[]")
+      case v => addSoyValue(sl, v, path + "[]")
     }
     sl
   }
@@ -217,10 +210,10 @@ class ClosureEngine(
     a match {
       case s: SoyMap => sm.put(k, s.build)
       case s: SoyList => sm.put(k, s.build)
-      case s: SoyString => Option(s.build) map (v => sm.put(k, v)) // prevent NullPointerException
+      case s: SoyString => Option(s.build) foreach (v => sm.put(k, v)) // prevent NullPointerException
       case s: SoyBoolean => sm.put(k, s.build)
       case s: SoyInt => sm.put(k, s.build)
-      case s: SoyFloat => sm.put(k, (s.build: Double))
+      case s: SoyFloat => sm.put(k, s.build: Double)
       case s: SoyHtml => sm.put(k, s.build)
       case s: SoyUri => sm.put(k, s.build)
       case s: SoyCss => sm.put(k, s.build)
@@ -351,7 +344,7 @@ class ClosureEngine(
     data.get(KEY_DELEGATE_NS) match {
       case Some(sd: Set[String]) =>
         renderer(template, locale)
-          .setActiveDelegatePackageNames(sd)
+          .setActiveDelegatePackageSelector(Predicates.in(sd))
           .setData(mapToSoyData(data, path = ""))
           .setIjData(mapToSoyData(inject, path = ""))
           .render()
@@ -394,7 +387,7 @@ class ClosureEngine(
     delegate match {
       case Some(sd: String) =>
         renderer(template, locale)
-          .setActiveDelegatePackageNames(Set(sd.toString))
+          .setActiveDelegatePackageSelector(Predicates.in(Set(sd.toString)))
           .setData(data)
           .setIjData(inject)
           .render()
