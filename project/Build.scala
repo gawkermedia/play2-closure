@@ -1,7 +1,7 @@
 // vim: sw=2 ts=2 softtabstop=2 expandtab :
 import sbt._
 import Keys._
-import play.Play.autoImport._
+import play.sbt.Play.autoImport._
 import PlayKeys._
 import com.typesafe.sbt.SbtScalariform._
 
@@ -14,7 +14,7 @@ object ApplicationBuild extends Build {
     version := appVersion,
     // Add your own project settings here
     libraryDependencies ++= Seq(
-      "com.kinja" %% "soy" % "2.2.2-SNAPSHOT"
+      "com.kinja" %% "soy" % "3.0.0"
     ),
     resolvers += "Gawker Public Group" at "https://nexus.kinja-ops.com/nexus/content/groups/public/",
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
