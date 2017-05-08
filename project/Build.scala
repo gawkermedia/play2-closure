@@ -14,7 +14,11 @@ object ApplicationBuild extends Build {
     version := appVersion,
     // Add your own project settings here
     libraryDependencies ++= Seq(
-      "com.kinja" %% "soy" % "3.0.0"
+      "com.kinja" %% "soy" % "3.0.0",
+      "org.specs2" %% "specs2-core" % "3.6.1-scalaz-7.0.6" % Test,
+      "org.specs2" %% "specs2-junit" % "3.6.1-scalaz-7.0.6" % Test,
+      "org.specs2" %% "specs2-mock" % "3.6.1-scalaz-7.0.6" % Test,
+      "org.specs2" %% "specs2-scalacheck" % "3.6.1-scalaz-7.0.6" % Test
     ),
     resolvers += "Gawker Public Group" at "https://nexus.kinja-ops.com/nexus/content/groups/public/",
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),

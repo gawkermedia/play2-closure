@@ -100,8 +100,8 @@ class SoyRenderSpec extends Specification with TestApp {
     }
     "not escape SoyUri in URI contexts" in {
       running(app) {
-        val rendered = Closure.render("soyrender.valueUri", Soy.map("value" -> SoyUri("bar=&baz=b")))
-        rendered must_== """<a href="http://foo.com?bar=&baz=b"></a>"""
+        val rendered = Closure.render("soyrender.valueUri", Soy.map("value" -> SoyUri("?bar=&baz=b")))
+        rendered must_== """<a href="http://foo.com?bar=&amp;baz=b"></a>"""
       }
     }
     "render SoyList()" in {
