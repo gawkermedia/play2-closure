@@ -133,10 +133,10 @@ class ClosurePlugin @Inject() (implicit app: Application) extends Plugin {
  * @param files List of your templates
  */
 class ClosureEngine(
-    val files: Traversable[URL],
-    localeDir: Option[File] = None,
-    val DEFAULT_LOCALE: String = "en-US",
-    val modules: Seq[com.google.inject.Module]) {
+  val files: Traversable[URL],
+  localeDir: Option[File] = None,
+  val DEFAULT_LOCALE: String = "en-US",
+  val modules: Seq[com.google.inject.Module]) {
 
   var injector: Injector = Guice.createInjector(modules: _*)
 
