@@ -1,15 +1,19 @@
 // vim: sw=2 ts=2 softtabstop=2 expandtab :
-package com.kinja.play.plugins
+package com.kinja.play
 
 import com.google.common.base.Predicates
-import play.api.{ Application, Logger, Mode, Plugin }
+import play.api.{ Application, Logger, Mode }
 
 import collection.mutable.ListBuffer
 import collection.JavaConversions._
 import util.control.NonFatal
 import com.google.inject.Guice
 import com.google.inject.Injector
-import com.google.inject.Module
+
+import play.api.Configuration
+import play.api.inject.Binding
+import play.api.Environment
+
 import com.google.template.soy.SoyFileSet
 import com.google.template.soy.data.{ SanitizedContent, SoyData, SoyListData, SoyMapData }
 import com.google.template.soy.tofu.SoyTofu
@@ -38,30 +42,52 @@ class InvalidClosureValueException(obj: Any, path: Option[String] = None) extend
     path.map(" at " + _).getOrElse("") + ": " + objAsString
 }
 
+trait ClosureComponent {
+
+  def environment: Environment
+
+  def getVersion: String
+
+  def setVersion(value: String): Boolean
+
+  def render(template: String): String
+
+  def render(template: String, data: SoyMapData): String
+
+  def render(template: String, data: SoyMapData, inject: SoyMapData): String
+
+  def render(template: String, data: SoyMap): String
+
+  def render(template: String, data: SoyMap, inject: SoyMap): String
+}
+
 /**
  * Play plugin for Closure.
  */
-class ClosurePlugin @Inject() (implicit app: Application) extends Plugin {
+class ClosureComponentImpl @Inject() (
+  configuration: Configuration,
+  override val environment: Environment
+) extends ClosureComponent {
 
-  private lazy val assetPath: Option[String] = app.configuration.getString("closureplugin.assetPath")
+  private lazy val assetPath: Option[String] = configuration.getString("closureplugin.assetPath")
   private lazy val soyPaths: List[String] =
-    app.configuration.getStringList("closureplugin.soyPaths").getOrElse {
+    configuration.getStringList("closureplugin.soyPaths").getOrElse {
       val defaults = new java.util.LinkedList[java.lang.String]()
       defaults.add("app/views/closure")
       defaults
     }.toList
 
   private lazy val modules: Seq[com.google.inject.Module] =
-    app.configuration.getStringList("closureplugin.plugins").map(_.flatMap(s =>
+    configuration.getStringList("closureplugin.plugins").map(_.flatMap(s =>
       (try {
-        app.classloader.loadClass(s).newInstance()
+        environment.classLoader.loadClass(s).newInstance()
       } catch {
         case e: ClassNotFoundException =>
-          throw new ClosurePluginException("Plugin class: " + s + " not found.")
+          throw new ClosureModuleException("Module class: " + s + " not found.")
         case e: InstantiationException =>
-          throw new ClosurePluginException("Plugin class: " + s + " has no default constructor.")
+          throw new ClosureModuleException("Module class: " + s + " has no default constructor.")
         case e: IllegalAccessException =>
-          throw new ClosurePluginException("Plugin class: " + s + " has no accessible constructor.")
+          throw new ClosureModuleException("Module class: " + s + " has no accessible constructor.")
       }) match {
         case e: com.google.inject.Module => List(e)
         case _ => List.empty
@@ -70,23 +96,23 @@ class ClosurePlugin @Inject() (implicit app: Application) extends Plugin {
   private var engine: ClosureEngine = null
   private var version: String = ""
 
-  def log = Logger("closureplugin")
+  private def log = Logger("closureplugin")
 
-  def newEngine: ClosureEngine = assetPath match {
+  private def newEngine: ClosureEngine = assetPath match {
     // read templates from filesystem
-    case Some(rootDir) => ClosureEngine(app.mode, soyPaths, rootDir, modules)
+    case Some(rootDir) => ClosureEngine(environment.mode, soyPaths, rootDir, modules)
     // read templates from jar
     case _ => ClosureEngine.apply(soyPaths, modules)
   }
 
-  def reloadEngine(): Unit = {
+  private def reloadEngine(): Unit = {
     log.info("Reloading engine")
     engine = newEngine.build
   }
 
-  def getVersion: String = version
+  override def getVersion: String = version
 
-  def setVersion(value: String): Boolean = {
+  override def setVersion(value: String): Boolean = {
     if (version != value) {
       version = value
       reloadEngine()
@@ -100,29 +126,34 @@ class ClosurePlugin @Inject() (implicit app: Application) extends Plugin {
    * If the app is running in production mode then always returns a same engine instance,
    * otherwise returns a brand new instance.
    */
-  def api: ClosureEngine = {
+  private def api: ClosureEngine = {
     if (engine == null) {
       reloadEngine()
     }
     engine
   }
 
-  override def onStart() = {
-    if (enabled) {
-      log.info("start on mode: " + app.mode)
+  override def render(template: String): String =
+    api.render(template, new SoyMapData(), new SoyMapData())
 
-      version = app.configuration.getString("buildNumber").getOrElse(
-        throw new Exception("buildNumber config is missing"))
-      // This prevent the new engine creatation on startup in dev mode.
-      //if (app.mode == Mode.Prod) {
-      api
-      //}
-    } else {
-      log.info("plugin is disabled")
-    }
-  }
+  override def render(template: String, data: SoyMapData): String =
+    api.render(template, data, new SoyMapData())
 
-  override lazy val enabled: Boolean = !app.configuration.getString("closureplugin.status").contains("disabled")
+  override def render(template: String, data: SoyMapData, inject: SoyMapData): String =
+    api.render(template, data, inject)
+
+  override def render(template: String, data: SoyMap): String =
+    api.render(template, data.build, new SoyMapData())
+
+  override def render(template: String, data: SoyMap, inject: SoyMap): String =
+    api.render(template, data.build, inject.build)
+
+  log.info("start on mode: " + environment.mode)
+
+  version = configuration.getString("buildNumber").getOrElse(throw new Exception("buildNumber config is missing"))
+
+  // start the ClosureEngine
+  api
 }
 
 /**
@@ -521,33 +552,13 @@ object ClosureEngine {
 }
 
 /**
- * Helper object
+ * Play module.
  */
-object Closure {
-
-  private def plugin = play.api.Play.maybeApplication.map { app =>
-    app.plugin[ClosurePlugin].getOrElse(throw new RuntimeException("you should enable ClosurePlugin in play.plugins"))
-  }.getOrElse(throw new RuntimeException("you should have a running app in scope a this point"))
-
-  // PUBLIC INTERFACE
-  def reloadEngineCache(): Unit = plugin.reloadEngine()
-
-  def setVersion(value: String): Boolean = plugin.setVersion(value)
-
-  def render(template: String): String =
-    plugin.api.render(template, new SoyMapData(), new SoyMapData())
-
-  def render(template: String, data: SoyMapData): String =
-    plugin.api.render(template, data, new SoyMapData())
-
-  def render(template: String, data: SoyMapData, inject: SoyMapData): String =
-    plugin.api.render(template, data, inject)
-
-  def render(template: String, data: SoyMap): String =
-    plugin.api.render(template, data.build, new SoyMapData())
-
-  def render(template: String, data: SoyMap, inject: SoyMap): String =
-    plugin.api.render(template, data.build, inject.build)
+class ClosureModule extends play.api.inject.Module {
+  def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
+    Seq(
+      bind[ClosureComponent].to[ClosureComponentImpl])
+  }
 }
 
-class ClosurePluginException(msg: String) extends Exception(msg)
+class ClosureModuleException(msg: String) extends Exception(msg)
