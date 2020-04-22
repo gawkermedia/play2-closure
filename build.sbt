@@ -15,7 +15,7 @@ scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
 
 javacOptions ++= Seq("-Xlint:deprecation")
 
-val specs2Version = "3.7"
+val specs2Version = "4.8.3"
 
 libraryDependencies ++= Seq(
   "com.kinja" %% "soy" % "3.0.0",
