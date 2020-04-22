@@ -66,8 +66,7 @@ trait ClosureComponent {
  */
 class ClosureComponentImpl @Inject() (
   configuration: Configuration,
-  override val environment: Environment
-) extends ClosureComponent {
+  override val environment: Environment) extends ClosureComponent {
 
   private lazy val assetPath: Option[String] = configuration.getString("closureplugin.assetPath")
   private lazy val soyPaths: List[String] =
@@ -296,7 +295,7 @@ class ClosureEngine(
     val soyBuilder = injector.getInstance(classOf[SoyFileSet.Builder])
     //val soyBuilder = new SoyFileSet.Builder()
     input.foreach(file => {
-      Logger("closureplugin").debug("Add " + file)
+      log.debug("Add " + file)
       soyBuilder.add(file)
     })
     soyBuilder
