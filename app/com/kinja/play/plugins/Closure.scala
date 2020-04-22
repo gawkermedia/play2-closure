@@ -2,9 +2,7 @@
 package com.kinja.play.plugins
 
 import com.google.common.base.Predicates
-import play.api._
-import play.twirl.api._
-import play.api.Play.current
+import play.api.{ Application, Logger, Mode, Plugin }
 
 import collection.mutable.ListBuffer
 import collection.JavaConversions._
@@ -550,18 +548,6 @@ object Closure {
 
   def render(template: String, data: SoyMap, inject: SoyMap): String =
     plugin.api.render(template, data.build, inject.build)
-
-  def html(template: String, data: Map[String, Any] = Map()): Html =
-    Html(plugin.api.render(template, data, Map[String, Any]()))
-
-  def html(template: String, data: Map[String, Any], inject: Map[String, Any]): Html =
-    Html(plugin.api.render(template, data, inject))
-
-  def html(template: String, data: SoyMapData): Html =
-    Html(render(template, data, new SoyMapData))
-
-  def html(template: String, data: SoyMapData, inject: SoyMapData): Html =
-    Html(render(template, data, inject))
 }
 
 class ClosurePluginException(msg: String) extends Exception(msg)

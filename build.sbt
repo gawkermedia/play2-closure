@@ -5,7 +5,7 @@ name := "play2-closure" + playClassifier
 
 organization := "com.kinja.play"
 
-version := "1.0.1" + (if (RELEASE_BUILD) "" else "-SNAPSHOT")
+version := "2.0.0" + (if (RELEASE_BUILD) "" else "-SNAPSHOT")
 
 crossScalaVersions := Seq("2.11.12")
 
