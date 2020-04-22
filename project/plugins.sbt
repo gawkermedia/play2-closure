@@ -1,15 +1,25 @@
 // Comment to get more information during initialization
 logLevel := Level.Warn
 
-resolvers += "Gawker Public Group" at "https://nexus.kinja-ops.com/nexus/content/groups/public"
+resolvers := Seq(
+	"Kinja Public" at sys.env.getOrElse("KINJA_PUBLIC_REPO", "https://kinjajfrog.jfrog.io/kinjajfrog/sbt-virtual"),
+	"sonatype-releases" at "https://oss.sonatype.org/content/repositories/releases/"
+)
 
-credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
+val credentialsFile = Path.userHome / ".ivy2" / ".kinja-artifactory.credentials"
 
-// The Typesafe repository
-resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
+credentials ++= (if (credentialsFile.exists) {
+	Seq(Credentials(credentialsFile))
+} else {
+	sys.env.get("KINJA_JFROG_PASSWORD")
+		.map(Credentials("Artifactory Realm", "kinjajfrog.jfrog.io", "kinja", _)).toSeq
+})
+
+// Automatic code formatting
+addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.8.3")
+
+// Kinja build plugin
+addSbtPlugin("com.kinja.sbtplugins" %% "kinja-build-plugin" % "3.2.1")
 
 // Use the Play sbt plugin for Play projects
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.4.11")
-
-addSbtPlugin("com.typesafe.sbt" % "sbt-scalariform" % "1.2.0")
-
