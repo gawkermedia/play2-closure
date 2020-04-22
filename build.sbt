@@ -18,7 +18,8 @@ javacOptions ++= Seq("-Xlint:deprecation")
 val specs2Version = "4.8.3"
 
 libraryDependencies ++= Seq(
-  "com.kinja" %% "soy" % "3.0.0",
+  "com.kinja" %% "soy" % "4.0.0-SNAPSHOT",
+  "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.4",
   "org.specs2" %% "specs2-core" % specs2Version % Test,
   "org.specs2" %% "specs2-junit" % specs2Version % Test,
   "org.specs2" %% "specs2-mock" % specs2Version % Test,
