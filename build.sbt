@@ -1,10 +1,15 @@
 
-name := "play2-closure"
+val playClassifier = "-play24"
+
+name := "play2-closure" + playClassifier
+
 organization := "com.kinja.play"
 
-version := "1.0.1-2.4.11"
+version := "1.0.1" + (if (RELEASE_BUILD) "" else "-SNAPSHOT")
 
-scalaVersion := "2.11.12"
+crossScalaVersions := Seq("2.11.12")
+
+scalaVersion := crossScalaVersions.value.head
 
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
 
