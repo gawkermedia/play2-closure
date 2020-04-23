@@ -1,6 +1,6 @@
 import scalariform.formatter.preferences._
 
-val playClassifier = "-play24"
+val playClassifier = "-play25"
 
 name := "play2-closure" + playClassifier
 organization := "com.kinja.play"
