@@ -64,8 +64,8 @@ trait ClosureComponent {
  * Play plugin for Closure.
  */
 class ClosureComponentImpl @Inject() (
-  configuration: Configuration,
-  override val environment: Environment) extends ClosureComponent {
+    configuration: Configuration,
+    override val environment: Environment) extends ClosureComponent {
 
   private lazy val assetPath: Option[String] = Try(configuration.underlying.getString("closureplugin.assetPath")).toOption
   private lazy val soyPaths: Seq[String] =
@@ -158,10 +158,10 @@ class ClosureComponentImpl @Inject() (
  * @param files List of your templates
  */
 class ClosureEngine(
-  val files: Traversable[URL],
-  localeDir: Option[File] = None,
-  val DEFAULT_LOCALE: String = "en-US",
-  val modules: Seq[com.google.inject.Module]) {
+    val files: Traversable[URL],
+    localeDir: Option[File] = None,
+    val DEFAULT_LOCALE: String = "en-US",
+    val modules: Seq[com.google.inject.Module]) {
 
   var injector: Injector = Guice.createInjector(modules: _*)
 
@@ -207,7 +207,7 @@ class ClosureEngine(
       case l: Seq[Any] => sl.add(seqToSoyData(l, path))
       case s: String => sl.add(s)
       case d: Double => sl.add(d)
-      case f: Float => sl.add(f)
+      case f: Float => sl.add(f.toDouble)
       case l: Long => sl.add(l.toString)
       case i: Int => sl.add(i)
       case b: Boolean => sl.add(b)
@@ -248,7 +248,7 @@ class ClosureEngine(
       case l: Seq[Any] => sm.put(k, seqToSoyData(l, path))
       case s: String => sm.put(k, s)
       case d: Double => sm.put(k, d)
-      case f: Float => sm.put(k, f)
+      case f: Float => sm.put(k, f.toDouble)
       case l: Long => sm.put(k, l.toString)
       case i: Int => sm.put(k, i)
       case b: Boolean => sm.put(k, b)
