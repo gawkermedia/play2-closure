@@ -2,30 +2,29 @@
 package com.kinja.play
 
 import com.google.common.base.Predicates
-import play.api.{ Application, Logger, Mode }
-
-import collection.mutable.ListBuffer
-import collection.JavaConversions._
-import util.control.NonFatal
-import com.google.inject.Guice
-import com.google.inject.Injector
-
-import play.api.Configuration
-import play.api.inject.Binding
-import play.api.Environment
-
-import com.google.template.soy.SoyFileSet
+import com.google.inject.{ Guice, Injector }
 import com.google.template.soy.data.{ SanitizedContent, SoyData, SoyListData, SoyMapData }
+import com.google.template.soy.msgs.{ SoyMsgBundle, SoyMsgBundleHandler }
+import com.google.template.soy.SoyFileSet
 import com.google.template.soy.tofu.SoyTofu
-import com.google.template.soy.msgs.SoyMsgBundle
-import com.google.template.soy.msgs.SoyMsgBundleHandler
 import com.google.template.soy.xliffmsgplugin.XliffMsgPlugin
+
+import com.kinja.soy._
+
 import java.io.File
 import java.net.URL
 import java.nio.file.Paths
 import java.util.jar.JarFile
-import com.kinja.soy._
 import javax.inject.Inject
+
+import play.api.{ Configuration, Environment }
+import play.api.inject.Binding
+import play.api.{ Application, Logger, Mode }
+
+import scala.collection.mutable.ListBuffer
+import scala.jdk.CollectionConverters._
+import scala.util.Try
+import scala.util.control.NonFatal
 
 class InvalidClosureValueException(obj: Any, path: Option[String] = None) extends Exception {
 
@@ -65,19 +64,16 @@ trait ClosureComponent {
  * Play plugin for Closure.
  */
 class ClosureComponentImpl @Inject() (
-  configuration: Configuration,
-  override val environment: Environment) extends ClosureComponent {
+    configuration: Configuration,
+    override val environment: Environment) extends ClosureComponent {
 
-  private lazy val assetPath: Option[String] = configuration.getString("closureplugin.assetPath")
-  private lazy val soyPaths: List[String] =
-    configuration.getStringList("closureplugin.soyPaths").getOrElse {
-      val defaults = new java.util.LinkedList[java.lang.String]()
-      defaults.add("app/views/closure")
-      defaults
-    }.toList
+  private lazy val assetPath: Option[String] = Try(configuration.underlying.getString("closureplugin.assetPath")).toOption
+  private lazy val soyPaths: Seq[String] =
+    Try(configuration.underlying.getStringList("closureplugin.soyPaths")).toOption.map(_.asScala)
+      .getOrElse(Seq("app/views/closure"))
 
   private lazy val modules: Seq[com.google.inject.Module] =
-    configuration.getStringList("closureplugin.plugins").map(_.flatMap(s =>
+    Try(configuration.underlying.getStringList("closureplugin.plugins")).toOption.map(_.asScala.flatMap(s =>
       (try {
         environment.classLoader.loadClass(s).newInstance()
       } catch {
@@ -88,8 +84,8 @@ class ClosureComponentImpl @Inject() (
         case e: IllegalAccessException =>
           throw new ClosureModuleException("Module class: " + s + " has no accessible constructor.")
       }) match {
-        case e: com.google.inject.Module => List(e)
-        case _ => List.empty
+        case e: com.google.inject.Module => Seq(e)
+        case _ => Seq.empty
       })).getOrElse(Seq.empty)
 
   private var engine: ClosureEngine = null
@@ -149,7 +145,8 @@ class ClosureComponentImpl @Inject() (
 
   log.info("start on mode: " + environment.mode)
 
-  version = configuration.getString("buildNumber").getOrElse(throw new Exception("buildNumber config is missing"))
+  version = Try(configuration.underlying.getString("buildNumber")).toOption
+    .getOrElse(throw new Exception("buildNumber config is missing"))
 
   // start the ClosureEngine
   api
@@ -161,10 +158,10 @@ class ClosureComponentImpl @Inject() (
  * @param files List of your templates
  */
 class ClosureEngine(
-  val files: Traversable[URL],
-  localeDir: Option[File] = None,
-  val DEFAULT_LOCALE: String = "en-US",
-  val modules: Seq[com.google.inject.Module]) {
+    val files: Traversable[URL],
+    localeDir: Option[File] = None,
+    val DEFAULT_LOCALE: String = "en-US",
+    val modules: Seq[com.google.inject.Module]) {
 
   var injector: Injector = Guice.createInjector(modules: _*)
 
@@ -210,7 +207,7 @@ class ClosureEngine(
       case l: Seq[Any] => sl.add(seqToSoyData(l, path))
       case s: String => sl.add(s)
       case d: Double => sl.add(d)
-      case f: Float => sl.add(f)
+      case f: Float => sl.add(f.toDouble)
       case l: Long => sl.add(l.toString)
       case i: Int => sl.add(i)
       case b: Boolean => sl.add(b)
@@ -251,7 +248,7 @@ class ClosureEngine(
       case l: Seq[Any] => sm.put(k, seqToSoyData(l, path))
       case s: String => sm.put(k, s)
       case d: Double => sm.put(k, d)
-      case f: Float => sm.put(k, f)
+      case f: Float => sm.put(k, f.toDouble)
       case l: Long => sm.put(k, l.toString)
       case i: Int => sm.put(k, i)
       case b: Boolean => sm.put(k, b)
@@ -319,7 +316,7 @@ class ClosureEngine(
   def msgBundle(locale: String): Option[SoyMsgBundle] = {
     if (locale != DEFAULT_LOCALE) {
       localeDir match {
-        case Some(dir: File) =>
+        case Some(dir) =>
           val xlf = new File(dir.getCanonicalPath + "/" + locale + ".xlf")
           if (xlf.exists) {
             val bundleHandler = new SoyMsgBundleHandler(new XliffMsgPlugin())
@@ -351,10 +348,9 @@ class ClosureEngine(
    * 									You can use names like "closuretest.index.soy", the .soy extension will be removed.
    */
   def renderer(template: String, locale: String = DEFAULT_LOCALE): SoyTofu.Renderer = {
-    msgBundle(locale) match {
-      case Some(bundle: SoyMsgBundle) => newRenderer(template).setMsgBundle(bundle)
-      case _ => newRenderer(template)
-    }
+    msgBundle(locale)
+      .map(bundle => newRenderer(template).setMsgBundle(bundle))
+      .getOrElse(newRenderer(template))
   }
 
   /**
@@ -372,7 +368,7 @@ class ClosureEngine(
     data.get(KEY_DELEGATE_NS) match {
       case Some(sd: Set[String]) =>
         renderer(template, locale)
-          .setActiveDelegatePackageSelector(Predicates.in(sd))
+          .setActiveDelegatePackageSelector(Predicates.in(sd.asJava))
           .setData(mapToSoyData(data, path = ""))
           .setIjData(mapToSoyData(inject, path = ""))
           .render()
@@ -415,7 +411,7 @@ class ClosureEngine(
     delegate match {
       case Some(sd: String) =>
         renderer(template, locale)
-          .setActiveDelegatePackageSelector(Predicates.in(Set(sd.toString)))
+          .setActiveDelegatePackageSelector(Predicates.in(Set(sd.toString).asJava))
           .setData(data)
           .setIjData(inject)
           .render()
@@ -444,19 +440,19 @@ object ClosureEngine {
    */
   def apply(
     mode: Mode.Mode,
-    soyPaths: List[String],
+    soyPaths: Seq[String],
     rootDir: String,
     modules: Seq[com.google.inject.Module]): ClosureEngine = mode match {
     case Mode.Dev => soyPaths match {
-      case sp: List[String] if sp.nonEmpty => apply(sp, "app/locales", modules)
-      case _ => apply(List("app/views/closure"), "app/locales", modules)
+      case sp if sp.nonEmpty => apply(sp, "app/locales", modules)
+      case _ => apply(Seq("app/views/closure"), "app/locales", modules)
     }
-    case Mode.Test => apply(List("test/views/closure"), "test/locales", modules)
+    case Mode.Test => apply(Seq("test/views/closure"), "test/locales", modules)
     case _ =>
       val templateDirs = soyPaths match {
-        case sp: List[String] if sp.nonEmpty =>
+        case sp if sp.nonEmpty =>
           sp.map(p => new File(rootDir + "/" + p + "/closure"))
-        case _ => List(new File(rootDir + "/closure"))
+        case _ => Seq(new File(rootDir + "/closure"))
       }
       val existingTemplateDirs = templateDirs.filter(_.exists)
       Logger("closureplugin").info("Checking template directory: " + templateDirs)
@@ -480,12 +476,12 @@ object ClosureEngine {
    *
    */
   def apply(
-    soyPaths: List[String],
+    soyPaths: Seq[String],
     modules: Seq[com.google.inject.Module]): ClosureEngine = {
     val buffer = new ListBuffer[URL]()
 
     // get soy files from current working directory
-    val dirs = if (soyPaths.nonEmpty) soyPaths else List(".")
+    val dirs = if (soyPaths.nonEmpty) soyPaths else Seq(".")
     buffer ++= dirs.flatMap(dir => recursiveListFiles(Paths.get(dir).toFile, ".soy")).map(_.toURI.toURL)
 
     // get soy files from the classpath
@@ -523,7 +519,7 @@ object ClosureEngine {
    *
    * @param templateDirs Directory of template files.
    */
-  def apply(templateDirs: List[File], localeDir: Option[File], modules: Seq[com.google.inject.Module]): ClosureEngine = new ClosureEngine(
+  def apply(templateDirs: Seq[File], localeDir: Option[File], modules: Seq[com.google.inject.Module]): ClosureEngine = new ClosureEngine(
     templateDirs.flatMap(recursiveListFiles(_, ".soy")).map(_.toURI.toURL), localeDir, modules = modules)
 
   /**
@@ -531,7 +527,7 @@ object ClosureEngine {
    *
    * @param templateDirs Directory of template files.
    */
-  def apply(templateDirs: List[String], localeDir: String, modules: Seq[com.google.inject.Module]): ClosureEngine =
+  def apply(templateDirs: Seq[String], localeDir: String, modules: Seq[com.google.inject.Module]): ClosureEngine =
     apply(
       templateDirs.map(td => new File(td)),
       Some(new File(localeDir)),
