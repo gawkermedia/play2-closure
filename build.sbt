@@ -1,10 +1,12 @@
 import scalariform.formatter.preferences._
 
 val playClassifier = "-play25"
+// val googleSoyVersion = "2015-04-10"
+val googleSoyVersion = "2016-08-09"
 
 name := "play2-closure" + playClassifier
 organization := "com.kinja.play"
-version := "2.0.0" + (if (RELEASE_BUILD) "" else "-SNAPSHOT")
+version := s"2.0.0-soy-$googleSoyVersion" + (if (RELEASE_BUILD) "" else "-SNAPSHOT")
 
 crossScalaVersions := Seq("2.11.12")
 scalaVersion := crossScalaVersions.value.head
@@ -73,7 +75,7 @@ scalariformPreferences := scalariformPreferences.value
 val specs2Version = "4.8.3"
 
 libraryDependencies ++= Seq(
-  "com.kinja" %% "soy" % "4.0.0",
+  "com.kinja" %% "soy" % s"4.0.0-soy-$googleSoyVersion",
   "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.4",
   "org.specs2" %% "specs2-core" % specs2Version % Test,
   "org.specs2" %% "specs2-junit" % specs2Version % Test,
