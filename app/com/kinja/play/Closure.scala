@@ -439,7 +439,7 @@ object ClosureEngine {
    * @return A new ClosureEngine instance
    */
   def apply(
-    mode: Mode.Mode,
+    mode: Mode,
     soyPaths: Seq[String],
     rootDir: String,
     modules: Seq[com.google.inject.Module]): ClosureEngine = mode match {

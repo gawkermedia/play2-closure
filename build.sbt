@@ -1,6 +1,6 @@
 import scalariform.formatter.preferences._
 
-val playClassifier = "-play25"
+val playClassifier = "-play27"
 // val googleSoyVersion = "2015-04-10"
 val googleSoyVersion = "2016-08-09"
 
