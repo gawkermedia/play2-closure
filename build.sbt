@@ -8,7 +8,7 @@ name := "play2-closure" + playClassifier
 organization := "com.kinja.play"
 version := s"2.0.0-soy-$googleSoyVersion" + (if (RELEASE_BUILD) "" else "-SNAPSHOT")
 
-crossScalaVersions := Seq("2.11.12")
+crossScalaVersions := Seq("2.13.1")
 scalaVersion := crossScalaVersions.value.head
 
 scalacOptions ++= Seq(

@@ -4,7 +4,6 @@ package com.kinja.play.plugins
 import com.kinja.soy.Soy
 import org.specs2.mutable._
 
-import play.api.test._
 import play.api.test.Helpers._
 import com.kinja.TestApp
 

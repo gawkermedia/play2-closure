@@ -1,16 +1,8 @@
 package com.kinja.soy
 
 import org.specs2.mutable._
-import org.specs2.specification.Scope
-import org.specs2.execute.{ AsResult, Result }
-import play.api.Application
-import play.api.test._
 import play.api.test.Helpers._
 import com.kinja.TestApp
-
-import com.kinja.play.ClosureComponent
-
-import com.google.template.soy.data.{ SoyMapData, SoyListData }
 
 class SoyRenderSpec extends Specification with TestApp {
 

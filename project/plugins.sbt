@@ -19,7 +19,7 @@ credentials ++= (if (credentialsFile.exists) {
 addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.8.3")
 
 // Kinja build plugin
-addSbtPlugin("com.kinja.sbtplugins" %% "kinja-build-plugin" % "3.2.1")
+addSbtPlugin("com.kinja.sbtplugins" %% "kinja-build-plugin" % "3.2.5")
 
 // Use the Play sbt plugin for Play projects
 // addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.4.11")

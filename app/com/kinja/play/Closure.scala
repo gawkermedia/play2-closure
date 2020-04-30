@@ -3,7 +3,7 @@ package com.kinja.play
 
 import com.google.common.base.Predicates
 import com.google.inject.{ Guice, Injector }
-import com.google.template.soy.data.{ SanitizedContent, SoyData, SoyListData, SoyMapData }
+import com.google.template.soy.data.{ SanitizedContent, SoyListData, SoyMapData }
 import com.google.template.soy.msgs.{ SoyMsgBundle, SoyMsgBundleHandler }
 import com.google.template.soy.SoyFileSet
 import com.google.template.soy.tofu.SoyTofu
@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 import play.api.{ Configuration, Environment }
 import play.api.inject.Binding
-import play.api.{ Application, Logger, Mode }
+import play.api.{ Logger, Mode }
 
 import scala.collection.mutable.ListBuffer
 import scala.jdk.CollectionConverters._
@@ -69,11 +69,11 @@ class ClosureComponentImpl @Inject() (
 
   private lazy val assetPath: Option[String] = Try(configuration.underlying.getString("closureplugin.assetPath")).toOption
   private lazy val soyPaths: Seq[String] =
-    Try(configuration.underlying.getStringList("closureplugin.soyPaths")).toOption.map(_.asScala)
+    Try(configuration.underlying.getStringList("closureplugin.soyPaths")).toOption.map(_.asScala.toSeq)
       .getOrElse(Seq("app/views/closure"))
 
   private lazy val modules: Seq[com.google.inject.Module] =
-    Try(configuration.underlying.getStringList("closureplugin.plugins")).toOption.map(_.asScala.flatMap(s =>
+    Try(configuration.underlying.getStringList("closureplugin.plugins")).toOption.map(_.asScala.toSeq.flatMap(s =>
       (try {
         environment.classLoader.loadClass(s).newInstance()
       } catch {
@@ -158,7 +158,7 @@ class ClosureComponentImpl @Inject() (
  * @param files List of your templates
  */
 class ClosureEngine(
-    val files: Traversable[URL],
+    val files: Iterable[URL],
     localeDir: Option[File] = None,
     val DEFAULT_LOCALE: String = "en-US",
     val modules: Seq[com.google.inject.Module]) {
@@ -288,7 +288,7 @@ class ClosureEngine(
    *
    * @param input List of template files
    */
-  def fileSet(input: Traversable[URL]): SoyFileSet.Builder = {
+  def fileSet(input: Iterable[URL]): SoyFileSet.Builder = {
     val soyBuilder = injector.getInstance(classOf[SoyFileSet.Builder])
     //val soyBuilder = new SoyFileSet.Builder()
     input.foreach(file => {
