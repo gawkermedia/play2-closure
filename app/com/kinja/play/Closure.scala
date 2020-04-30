@@ -77,11 +77,11 @@ class ClosureComponentImpl @Inject() (
       (try {
         environment.classLoader.loadClass(s).newInstance()
       } catch {
-        case e: ClassNotFoundException =>
+        case _: ClassNotFoundException =>
           throw new ClosureModuleException("Module class: " + s + " not found.")
-        case e: InstantiationException =>
+        case _: InstantiationException =>
           throw new ClosureModuleException("Module class: " + s + " has no default constructor.")
-        case e: IllegalAccessException =>
+        case _: IllegalAccessException =>
           throw new ClosureModuleException("Module class: " + s + " has no accessible constructor.")
       }) match {
         case e: com.google.inject.Module => Seq(e)

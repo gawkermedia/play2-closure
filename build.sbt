@@ -1,6 +1,6 @@
 import scalariform.formatter.preferences._
 
-val playClassifier = "-play27"
+val playClassifier = "-play28"
 // val googleSoyVersion = "2015-04-10"
 val googleSoyVersion = "2016-08-09"
 
@@ -36,8 +36,8 @@ scalacOptions ++= Seq(
   "-Ywarn-dead-code",                  // Fail when dead code is present. Prevents accidentally unreachable code.
   "-Ywarn-dead-code",                  // Fail when dead code is present. Prevents accidentally unreachable code.
   "-Ywarn-numeric-widen",              // Warn when numerics are widened.
-  // "-Ywarn-unused:params",              // Warn if a value parameter is unused.
-  // "-Ywarn-unused:patvars",             // Warn if a variable bound in a pattern is unused.
+  "-Ywarn-unused:params",              // Warn if a value parameter is unused.
+  "-Ywarn-unused:patvars",             // Warn if a variable bound in a pattern is unused.
   "-Ywarn-value-discard"               // Prevent accidental discarding of results in unit functions.
 )
 

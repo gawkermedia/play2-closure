@@ -22,8 +22,5 @@ addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.8.3")
 addSbtPlugin("com.kinja.sbtplugins" %% "kinja-build-plugin" % "3.2.5")
 
 // Use the Play sbt plugin for Play projects
-// addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.4.11")
-// addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.5.19")
-// addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.25")
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.7.4")
-// addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.8.1")
+// addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.7.4")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.8.1")
