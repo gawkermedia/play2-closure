@@ -12,3 +12,6 @@ local.sbt
 /.settings/
 /.target/
 /.idea/
+.bloop
+.bsp
+.metals

@@ -6,9 +6,9 @@ val googleSoyVersion = "2016-08-09"
 
 name := "play2-closure" + playClassifier
 organization := "com.kinja.play"
-version := s"2.0.0-soy-$googleSoyVersion" + (if (RELEASE_BUILD) "" else "-SNAPSHOT")
+version := s"2.0.1-soy-$googleSoyVersion" + (if (RELEASE_BUILD) "" else "-SNAPSHOT")
 
-crossScalaVersions := Seq("2.13.1")
+crossScalaVersions := Seq("2.13.7")
 scalaVersion := crossScalaVersions.value.head
 
 scalacOptions ++= Seq(
@@ -25,7 +25,6 @@ scalacOptions ++= Seq(
   "-Xlint:inaccessible",               // Warn about inaccessible types in method signatures.
   "-Xlint:infer-any",                  // Warn when a type argument is inferred to be `Any`.
   "-Xlint:missing-interpolator",       // A string literal appears to be missing an interpolator id.
-  "-Xlint:nullary-override",           // Warn when non-nullary `def f()' overrides nullary `def f'.
   "-Xlint:nullary-unit",               // Warn when nullary methods return Unit.
   "-Xlint:option-implicit",            // Option.apply used implicit view.
   "-Xlint:package-object-classes",     // Class or object defined in package object.
@@ -75,7 +74,7 @@ scalariformPreferences := scalariformPreferences.value
 val specs2Version = "4.8.3"
 
 libraryDependencies ++= Seq(
-  "com.kinja" %% "soy" % s"4.0.0-soy-$googleSoyVersion",
+  "com.kinja" %% "soy" % s"4.0.1-soy-$googleSoyVersion",
   "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.4",
   "org.specs2" %% "specs2-core" % specs2Version % Test,
   "org.specs2" %% "specs2-junit" % specs2Version % Test,

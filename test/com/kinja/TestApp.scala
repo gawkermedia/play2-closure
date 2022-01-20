@@ -12,7 +12,7 @@ trait TestApp {
       "closureplugin.plugins" -> Seq(
         "com.google.template.soy.SoyModule"))
     .bindings(bind[ClosureComponent].to[ClosureComponentImpl])
-    .build
+    .build()
 
   def closure: ClosureComponent = app.injector.instanceOf(classOf[ClosureComponent])
 }
