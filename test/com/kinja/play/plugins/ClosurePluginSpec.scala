@@ -2,13 +2,10 @@
 package com.kinja.play.plugins
 
 import com.kinja.soy.Soy
-import org.specs2.mutable._
-
-import play.api.test.Helpers._
 import com.kinja.TestApp
-
-import com.google.template.soy.data.SoyListData
-import com.google.template.soy.data.SoyMapData
+import org.specs2.mutable._
+import play.api.test.Helpers._
+import scala.jdk.CollectionConverters._
 
 class ClosurePluginSpec extends Specification with TestApp {
 
@@ -71,10 +68,12 @@ class ClosurePluginSpec extends Specification with TestApp {
       running(app) {
         closure.render(
           "closuretest.listInList",
-          new SoyMapData(
-            "name", "Test list",
-            "list", new SoyListData(java.util.Arrays.asList(new SoyListData(java.util.Arrays.asList(1, 2, 3, 4, 5, 6)))) /*,
-            "locale", "hu_HU"*/ )) === "Test list: 1, 2, 3, 4, 5, 6"
+          Map[String, Any](
+            "name" -> "Test list",
+            "list" -> List[Any](List[Any](1, 2, 3, 4, 5, 6).asJava).asJava
+          /*"locale" -> "hu_HU"*/
+          ).asJava
+        ) === "Test list: 1, 2, 3, 4, 5, 6"
       }
     }
   }

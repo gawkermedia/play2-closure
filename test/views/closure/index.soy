@@ -9,96 +9,96 @@ Hello world!
 
 /**
  * Long test template
- * 
- * @param long A long value
  */
 {template .long}
-{$long}
+	{@param long: string}
+	{$long}
 {/template}
 
 /**
  * List test template
  * 
- * @param name Name of the list
- * @param list A list
  */
 {template .list}
-{$name}:{sp}
-{foreach $item in $list}
-	{$item}{if not isLast($item)},{sp}{/if}
-{/foreach}
+	{@param name: string}
+	{@param list: list<any>}
+	{$name}:{sp}
+	{for $item in $list}
+		{$item}{if not isLast($item)},{sp}{/if}
+	{/for}
 {/template}
 
 /**
  * List in list test template
  * 
- * @param name Name of the list
- * @param list A list
  */
 {template .listInList}
-{foreach $item in $list}
-	{call .list}
-		{param name: $name/}
-		{param list: $item/}
-	{/call}
-{/foreach}
+	{@param name: string}
+	{@param list: list<list<any>>}
+	{for $item in $list}
+		{call .list}
+			{param name: $name/}
+			{param list: $item/}
+		{/call}
+	{/for}
 {/template}
 
 /**
  * List in map test template
  * 
- * @param name Name of the list
- * @param map A map with a list
  */
 {template .listInMap}
-{$name}:{sp}
-{foreach $item in $map.items}
-	{$item}{if not isLast($item)},{sp}{/if}
-{/foreach}
+	{@param name: string}
+	{@param map: [items: list<any>]}
+	{$name}:{sp}
+	{for $item in $map.items}
+		{$item}{if not isLast($item)},{sp}{/if}
+	{/for}
 {/template}
 
 /**
  * List test template
  * 
- * @param name Name of the list
- * @param soylist A soy list
  */
 {template .soylist}
-{$name}:{sp}
-{foreach $item in $soylist}
-	{$item}{if not isLast($item)},{sp}{/if}
-{/foreach}
+	{@param name: string}
+	{@param soylist: list<any>}
+	{$name}:{sp}
+	{for $item in $soylist}
+		{$item}{if not isLast($item)},{sp}{/if}
+	{/for}
 {/template}
 
 /**
  * locale test
  */
 {template .locale}
-{msg desc="Form Button - Submit"}Submit{/msg}
+	{msg desc="Form Button - Submit"}Submit{/msg}
 {/template}
 
 /**
  * Option test
  *
- * @param value an optional value
  */
 {template .option}
-{$value ? $value : 'None'}
+	{@param value: ?}
+	{$value ? $value : 'None'}
 {/template}
 
 /**
  * Boolean test
- * @param true Boolean true
- * @param nottrue Boolean false
  */
 {template .bool}
-{if $true}true {/if}
-{if not $nottrue}false{/if}
+	{@param true: bool}
+	{@param nottrue: bool}
+	{if $true}true {/if}
+	{if not $nottrue}false{/if}
 {/template}
 
 /**
  * Inject test
  */
 {template .inject}
-{$ij.foo}
+{@inject foo: any}
+{$foo}
 {/template}

@@ -15,14 +15,14 @@ Value is: {if $value}TRUE{else}FALSE{/if}
 {template .valueList}
 {@param list: list<any>}
 
-List is: {foreach $item in $list}
+List is: {for $item in $list}
   {if not isFirst($item)},{sp}{/if}
   {call .valueListItem}
   	{param item: $item /}
   {/call}
 {ifempty}
   EMPTY
-{/foreach}
+{/for}
 {/template}
 
 /**
